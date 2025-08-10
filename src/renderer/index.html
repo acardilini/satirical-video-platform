@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>Satirical Video Production Platform</title>
+    <link rel="stylesheet" href="styles/components.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+        
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar li {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar li:hover {
+            background-color: #2c3e50;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .app-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .info-item {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #ecf0f1;
+            border-radius: 6px;
+        }
+        
+        .loading {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .projects-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .projects-header h2 {
+            margin: 0;
+        }
+        
+        .debug-section {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        
+        .debug-section h4 {
+            margin-top: 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Satirical Video Production Platform</h1>
+        <div>
+            <span>Phase 0 Development</span>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <ul>
+                <li onclick="showSection('dashboard')">📊 Dashboard</li>
+                <li onclick="showSection('projects')">📁 Projects</li>
+                <li onclick="showSection('personas')">🎭 Personas</li>
+                <li onclick="showSection('settings')">⚙️ Settings</li>
+                <li onclick="showSection('about')">ℹ️ About</li>
+            </ul>
+        </div>
+        
+        <div class="content">
+            <div id="dashboard" class="section">
+                <div class="card">
+                    <div class="welcome-message">
+                        <h2>Welcome to SVPP</h2>
+                        <p>The Satirical Video Production Platform is now running in development mode.</p>
+                        <p>This is Phase 0 - Foundation & Architecture implementation.</p>
+                    </div>
+                    
+                    <div class="app-info">
+                        <div class="info-item">
+                            <h4>App Version</h4>
+                            <p id="app-version" class="loading">Loading...</p>
+                        </div>
+                        <div class="info-item">
+                            <h4>Platform</h4>
+                            <p id="platform-info" class="loading">Loading...</p>
+                        </div>
+                        <div class="info-item">
+                            <h4>Status</h4>
+                            <p>Development Mode</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="projects" class="section" style="display: none;">
+                <div class="card">
+                    <div class="projects-header">
+                        <h2>Projects</h2>
+                        <button id="create-project-btn" class="btn btn-primary">
+                            Create New Project
+                        </button>
+                    </div>
+                    <p>Manage your satirical video production projects</p>
+                    
+                    <!-- Projects List Container -->
+                    <div id="projects-list">
+                        <div class="loading-text">
+                            <span class="loading-spinner"></span>
+                            Loading projects...
+                        </div>
+                    </div>
+
+                    <!-- Database Test Section (can be removed later) -->
+                    <div class="debug-section" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
+                        <h4>Database Test</h4>
+                        <button onclick="testDatabase()">Test Database Connection</button>
+                        <div id="db-test-result"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="personas" class="section" style="display: none;">
+                <div class="card">
+                    <h2>AI Personas</h2>
+                    <p>LLM-powered personas will be managed here.</p>
+                    <ul>
+                        <li>Creative Strategist</li>
+                        <li>Baffling Broadcaster</li>
+                        <li>Satirical Screenwriter</li>
+                        <li>Cinematic Storyboarder</li>
+                        <li>Soundscape Architect</li>
+                        <li>Video Prompt Engineer</li>
+                    </ul>
+                    <button onclick="testLLM()">Test LLM Integration</button>
+                    <div id="llm-test-result"></div>
+                </div>
+            </div>
+            
+            <div id="settings" class="section" style="display: none;">
+                <div class="card">
+                    <h2>Settings</h2>
+                    <p>Application settings and configuration options.</p>
+                </div>
+            </div>
+            
+            <div id="about" class="section" style="display: none;">
+                <div class="card">
+                    <h2>About</h2>
+                    <p>Satirical Video Production Platform</p>
+                    <p>Desktop application for collaborative AI-assisted video production.</p>
+                    <h3>Technology Stack</h3>
+                    <ul>
+                        <li>Electron + TypeScript</li>
+                        <li>SQLite Database</li>
+                        <li>LLM Integration for AI Personas</li>
+                        <li>Veo3 AI Video Generation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="renderer.js"></script>
+</body>
+</html>

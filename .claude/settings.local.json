@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(rmdir:*)",
+      "Bash(rm:*)",
+      "Bash(powershell:*)",
+      "Bash(npm run build:*)",
+      "Bash(copy srcrendererindex.html distrendererindex.html)",
+      "Bash(timeout 10s npm start)",
+      "Bash(timeout 15s npm start)",
+      "Bash(npm rebuild:*)",
+      "Bash(npx:*)",
+      "Bash(npm start)",
+      "Bash(cp:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

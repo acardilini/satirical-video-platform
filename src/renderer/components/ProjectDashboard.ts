@@ -1,0 +1,543 @@
+// Project Overview Dashboard Component
+// Provides analytics, progress tracking, and project insights
+
+import { Project, NewsArticle, PersonaType } from '../../shared/types/index.js';
+
+interface ProjectStats {
+  totalArticles: number;
+  completedPhases: number;
+  totalPhases: number;
+  lastActivity: Date;
+  assignedPersonas: PersonaType[];
+}
+
+export class ProjectDashboard {
+  private currentProject: Project | null = null;
+  private projectStats: ProjectStats | null = null;
+
+  /**
+   * Initialize dashboard for a project
+   */
+  public async initialize(projectId: string): Promise<void> {
+    try {
+      // Load project data
+      const projectResult = await window.electronAPI.database.getProjectById(projectId);
+      if (!projectResult.success) {
+        throw new Error('Failed to load project');
+      }
+      
+      this.currentProject = projectResult.data;
+      
+      // Calculate project statistics
+      await this.calculateProjectStats(projectId);
+      
+      // Render the dashboard
+      this.renderDashboard();
+    } catch (error) {
+      console.error('Failed to initialize project dashboard:', error);
+      this.renderError('Failed to load project dashboard');
+    }
+  }
+
+  /**
+   * Calculate project statistics
+   */
+  private async calculateProjectStats(projectId: string): Promise<void> {
+    try {
+      // @ts-ignore
+      const articlesResult = await window.electronAPI.database.getNewsArticlesByProject(projectId);
+      const articles: NewsArticle[] = articlesResult.success ? articlesResult.data : [];
+      
+      // Calculate stats
+      const stats: ProjectStats = {
+        totalArticles: articles.length,
+        completedPhases: this.calculateCompletedPhases(),
+        totalPhases: 7, // Total modules in the pipeline
+        lastActivity: this.getLastActivity(articles),
+        assignedPersonas: this.currentProject?.assigned_personas || []
+      };
+      
+      this.projectStats = stats;
+    } catch (error) {
+      console.error('Failed to calculate project stats:', error);
+      this.projectStats = {
+        totalArticles: 0,
+        completedPhases: 0,
+        totalPhases: 7,
+        lastActivity: new Date(),
+        assignedPersonas: []
+      };
+    }
+  }
+
+  /**
+   * Calculate completed phases based on project content
+   */
+  private calculateCompletedPhases(): number {
+    // For Phase 1, we only have Module 1 completed
+    // In future phases, this will check for actual completion status
+    let completed = 0;
+    
+    // Phase 1: Project Management & News Article Ingestion
+    if (this.projectStats && this.projectStats.totalArticles > 0) {
+      completed = 1;
+    }
+    
+    // Future phases would check for:
+    // - Creative Strategy completion
+    // - Script development completion
+    // - Storyboard completion
+    // - Sound design completion
+    // - Shot brief completion
+    // - Prompt generation completion
+    
+    return completed;
+  }
+
+  /**
+   * Get last activity date from articles
+   */
+  private getLastActivity(articles: NewsArticle[]): Date {
+    if (articles.length === 0) {
+      return this.currentProject?.created_at || new Date();
+    }
+    
+    const latestArticle = articles.reduce((latest, current) => {
+      return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+    });
+    
+    return new Date(latestArticle.created_at);
+  }
+
+  /**
+   * Render the dashboard
+   */
+  private renderDashboard(): void {
+    const container = this.getDashboardContainer();
+    if (!container || !this.currentProject || !this.projectStats) return;
+
+    const progressPercentage = (this.projectStats.completedPhases / this.projectStats.totalPhases) * 100;
+    
+    container.innerHTML = `
+      <div class="project-dashboard">
+        <!-- Project Header -->
+        <div class="dashboard-header">
+          <div class="project-info">
+            <h2>${this.escapeHtml(this.currentProject.name)}</h2>
+            <p class="project-description">${this.escapeHtml(this.currentProject.description || 'No description provided')}</p>
+            <div class="project-metadata">
+              <span class="metadata-item">
+                <strong>Status:</strong> ${this.currentProject.status}
+              </span>
+              <span class="metadata-item">
+                <strong>Created:</strong> ${new Date(this.currentProject.created_at).toLocaleDateString()}
+              </span>
+              <span class="metadata-item">
+                <strong>Last Activity:</strong> ${this.projectStats.lastActivity.toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+          <div class="project-actions">
+            <button class="btn btn-primary dashboard-action" data-action="upload-article">
+              📰 Upload Article
+            </button>
+            <button class="btn btn-secondary dashboard-action" data-action="view-articles">
+              📋 View All Articles
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="progress-section">
+          <h3>Production Pipeline Progress</h3>
+          <div class="progress-bar-container">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+            </div>
+            <span class="progress-text">${this.projectStats.completedPhases}/${this.projectStats.totalPhases} phases completed (${Math.round(progressPercentage)}%)</span>
+          </div>
+          
+          <div class="phase-checklist">
+            ${this.renderPhaseChecklist()}
+          </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-section">
+          <h3>Project Metrics</h3>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value">${this.projectStats.totalArticles}</div>
+              <div class="metric-label">News Articles</div>
+              <div class="metric-description">Source material uploaded</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-value">${this.projectStats.assignedPersonas.length}</div>
+              <div class="metric-label">AI Personas</div>
+              <div class="metric-description">Creative team members</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-value">0</div>
+              <div class="metric-label">Scripts</div>
+              <div class="metric-description">Generated storylines</div>
+              <div class="metric-note">Available in Module 3</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-value">0</div>
+              <div class="metric-label">Video Shots</div>
+              <div class="metric-description">8-second segments</div>
+              <div class="metric-note">Available in Module 4</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Personas -->
+        <div class="personas-section">
+          <h3>Creative Team (AI Personas)</h3>
+          <div class="personas-grid">
+            ${this.renderAssignedPersonas()}
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+          <h3>Recent Activity</h3>
+          <div class="activity-feed" id="activity-feed-container">
+            <!-- Activity will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+          <h3>Quick Actions</h3>
+          <div class="quick-actions-grid">
+            <button class="quick-action-btn" data-action="upload-article">
+              <div class="action-icon">📰</div>
+              <div class="action-title">Upload News Article</div>
+              <div class="action-description">Add source material for satirical content</div>
+            </button>
+            
+            <button class="quick-action-btn disabled" data-action="create-strategy">
+              <div class="action-icon">🎯</div>
+              <div class="action-title">Create Strategy</div>
+              <div class="action-description">Develop creative direction (Module 2)</div>
+            </button>
+            
+            <button class="quick-action-btn disabled" data-action="develop-script">
+              <div class="action-icon">📝</div>
+              <div class="action-title">Develop Script</div>
+              <div class="action-description">Generate satirical content (Module 3)</div>
+            </button>
+            
+            <button class="quick-action-btn disabled" data-action="create-storyboard">
+              <div class="action-icon">🎬</div>
+              <div class="action-title">Create Storyboard</div>
+              <div class="action-description">Design visual sequences (Module 4)</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.setupEventListeners();
+    
+    // Load activity feed asynchronously
+    this.loadActivityFeed();
+  }
+
+  /**
+   * Load activity feed asynchronously
+   */
+  private async loadActivityFeed(): Promise<void> {
+    const container = document.getElementById('activity-feed-container');
+    if (!container || !this.currentProject) return;
+
+    try {
+      const activityHTML = await this.renderRecentActivity();
+      container.innerHTML = activityHTML;
+    } catch (error) {
+      console.error('Failed to load activity feed:', error);
+      container.innerHTML = `
+        <div class="activity-error">
+          <p>Failed to load recent activity</p>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Render phase checklist
+   */
+  private renderPhaseChecklist(): string {
+    const phases = [
+      { id: 'articles', name: 'News Article Ingestion', completed: this.projectStats!.totalArticles > 0 },
+      { id: 'strategy', name: 'Creative Strategy', completed: false },
+      { id: 'script', name: 'Script Development', completed: false },
+      { id: 'storyboard', name: 'Visual Storyboard', completed: false },
+      { id: 'sound', name: 'Sound Design', completed: false },
+      { id: 'shots', name: 'Shot Brief Generation', completed: false },
+      { id: 'prompts', name: 'AI Prompt Engineering', completed: false }
+    ];
+
+    return phases.map(phase => `
+      <div class="phase-item ${phase.completed ? 'completed' : 'pending'}">
+        <div class="phase-status">
+          ${phase.completed ? '✅' : '⏳'}
+        </div>
+        <div class="phase-name">${phase.name}</div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Render assigned personas
+   */
+  private renderAssignedPersonas(): string {
+    const personaLabels: Record<PersonaType, { name: string; description: string; icon: string }> = {
+      'CREATIVE_STRATEGIST': {
+        name: 'Creative Strategist',
+        description: 'Develops satirical angles and creative direction',
+        icon: '🎯'
+      },
+      'BAFFLING_BROADCASTER': {
+        name: 'Baffling Broadcaster',
+        description: 'Creates out-of-touch presenter commentary',
+        icon: '📺'
+      },
+      'SATIRICAL_SCREENWRITER': {
+        name: 'Satirical Screenwriter',
+        description: 'Writes cynical dialogue and scene scripts',
+        icon: '✍️'
+      },
+      'CINEMATIC_STORYBOARDER': {
+        name: 'Cinematic Storyboarder',
+        description: 'Designs detailed visual storyboards',
+        icon: '🎬'
+      },
+      'SOUNDSCAPE_ARCHITECT': {
+        name: 'Soundscape Architect',
+        description: 'Creates audio design and sound effects',
+        icon: '🎵'
+      },
+      'VIDEO_PROMPT_ENGINEER': {
+        name: 'Video Prompt Engineer',
+        description: 'Generates AI-optimized video prompts',
+        icon: '🤖'
+      },
+      'PROJECT_DIRECTOR': {
+        name: 'Project Director',
+        description: 'Oversees overall project coordination',
+        icon: '🎭'
+      }
+    };
+
+    return this.projectStats!.assignedPersonas.map(persona => {
+      const info = personaLabels[persona];
+      return `
+        <div class="persona-card">
+          <div class="persona-icon">${info.icon}</div>
+          <div class="persona-info">
+            <div class="persona-name">${info.name}</div>
+            <div class="persona-description">${info.description}</div>
+          </div>
+          <div class="persona-status">
+            <span class="status-indicator active">Ready</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Render recent activity feed
+   */
+  private async renderRecentActivity(): Promise<string> {
+    try {
+      // @ts-ignore
+      const articlesResult = await window.electronAPI.database.getNewsArticlesByProject(this.currentProject!.id);
+      const articles: NewsArticle[] = articlesResult.success ? articlesResult.data : [];
+      
+      if (articles.length === 0) {
+        return `
+          <div class="activity-empty">
+            <div class="empty-icon">📭</div>
+            <p>No recent activity. Upload your first news article to get started!</p>
+          </div>
+        `;
+      }
+
+      // Sort articles by creation date (newest first) and take the last 5
+      const recentArticles = articles
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5);
+
+      return recentArticles.map(article => `
+        <div class="activity-item">
+          <div class="activity-icon">📰</div>
+          <div class="activity-content">
+            <div class="activity-title">News article uploaded: "${this.escapeHtml(article.title)}"</div>
+            <div class="activity-time">${this.getRelativeTime(new Date(article.created_at))}</div>
+            ${article.source ? `<div class="activity-meta">Source: ${this.escapeHtml(article.source)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    } catch (error) {
+      console.error('Failed to load recent activity:', error);
+      return `
+        <div class="activity-error">
+          <p>Failed to load recent activity</p>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Setup event listeners for dashboard interactions
+   */
+  private setupEventListeners(): void {
+    // Dashboard actions
+    const actionButtons = document.querySelectorAll('.dashboard-action');
+    actionButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const action = (e.target as HTMLElement).getAttribute('data-action');
+        if (action) {
+          this.handleDashboardAction(action);
+        }
+      });
+    });
+
+    // Quick actions
+    const quickActionButtons = document.querySelectorAll('.quick-action-btn:not(.disabled)');
+    quickActionButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const action = (e.target as HTMLElement).closest('.quick-action-btn')?.getAttribute('data-action');
+        if (action) {
+          this.handleQuickAction(action);
+        }
+      });
+    });
+  }
+
+  /**
+   * Handle dashboard actions
+   */
+  private handleDashboardAction(action: string): void {
+    switch (action) {
+      case 'upload-article':
+        this.openArticleUpload();
+        break;
+      case 'view-articles':
+        this.switchToArticlesTab();
+        break;
+      default:
+        console.log('Unknown dashboard action:', action);
+    }
+  }
+
+  /**
+   * Handle quick actions
+   */
+  private handleQuickAction(action: string): void {
+    switch (action) {
+      case 'upload-article':
+        this.openArticleUpload();
+        break;
+      case 'create-strategy':
+        alert('Creative Strategy module will be available in Module 2');
+        break;
+      case 'develop-script':
+        alert('Script Development module will be available in Module 3');
+        break;
+      case 'create-storyboard':
+        alert('Visual Storyboard module will be available in Module 4');
+        break;
+      default:
+        console.log('Unknown quick action:', action);
+    }
+  }
+
+  /**
+   * Open article upload modal
+   */
+  private openArticleUpload(): void {
+    if (!this.currentProject) return;
+    
+    import('./NewsArticleUpload.js').then(module => {
+      module.newsArticleUpload.open(this.currentProject!.id);
+    });
+  }
+
+  /**
+   * Switch to articles tab
+   */
+  private switchToArticlesTab(): void {
+    const articlesTab = document.querySelector('[data-tab="articles"]') as HTMLElement;
+    if (articlesTab) {
+      articlesTab.click();
+    }
+  }
+
+  /**
+   * Get dashboard container element
+   */
+  private getDashboardContainer(): HTMLElement | null {
+    return document.getElementById('overview-tab');
+  }
+
+  /**
+   * Get relative time string
+   */
+  private getRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) {
+      return 'Just now';
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  private escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
+   * Render error state
+   */
+  private renderError(message: string): void {
+    const container = this.getDashboardContainer();
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="dashboard-error">
+        <div class="error-icon">❌</div>
+        <h3>Dashboard Error</h3>
+        <p>${this.escapeHtml(message)}</p>
+        <button class="btn btn-primary" onclick="location.reload()">
+          Retry
+        </button>
+      </div>
+    `;
+  }
+}
+
+// Export singleton instance
+export const projectDashboard = new ProjectDashboard();
