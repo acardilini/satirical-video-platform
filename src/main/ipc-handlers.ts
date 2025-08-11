@@ -3,6 +3,9 @@ import { databaseService } from '../database/database';
 import { AuthService } from '../services/auth';
 import { UserRepository, ProjectRepository, ConversationRepository } from '../database/models';
 import { generateId, validateShotDuration, sanitizeInput } from '../shared/utils';
+import { createLLMService } from '../services/llm.js';
+import { ModelAvailabilityService } from '../services/model-availability.js';
+import { AgentConfigService } from '../services/agent-config.js';
 
 /**
  * Setup all IPC handlers for main-renderer communication
@@ -183,6 +186,19 @@ export function setupIPCHandlers() {
     }
   });
 
+  ipcMain.handle('db-delete-project', async (event, id) => {
+    try {
+      return await databaseService.deleteProject(id);
+    } catch (error) {
+      console.error('Delete project IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to delete project: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
   // News Article operations
   ipcMain.handle('db-create-article', async (event, articleData) => {
     try {
@@ -231,6 +247,19 @@ export function setupIPCHandlers() {
       return {
         success: false,
         error: `Failed to get article: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-update-news-article', async (event, id, updates) => {
+    try {
+      return await databaseService.updateNewsArticle(id, updates);
+    } catch (error) {
+      console.error('Update article IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to update article: ${error}`,
         timestamp: new Date()
       };
     }
@@ -322,22 +351,148 @@ export function setupIPCHandlers() {
     }
   });
 
-  // ========== LLM HANDLERS (Placeholder for Phase 0) ==========
+  // ========== CREATIVE STRATEGY HANDLERS ==========
 
-  ipcMain.handle('llm-generate-response', async (event, persona, prompt, context) => {
-    // Placeholder implementation for Phase 0
-    return {
-      success: false,
-      error: 'LLM integration not yet implemented (Phase 0)',
-      timestamp: new Date()
-    };
+  ipcMain.handle('db-create-creative-strategy', async (event, strategyData) => {
+    try {
+      return await databaseService.createCreativeStrategy(strategyData);
+    } catch (error) {
+      console.error('Create creative strategy IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to create creative strategy: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-get-creative-strategy', async (event, projectId) => {
+    try {
+      return await databaseService.getCreativeStrategy(projectId);
+    } catch (error) {
+      console.error('Get creative strategy IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to get creative strategy: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-generate-creative-strategy', async (event, projectId) => {
+    try {
+      return await databaseService.generateCreativeStrategy(projectId);
+    } catch (error) {
+      console.error('Generate creative strategy IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to generate creative strategy: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-update-creative-strategy', async (event, strategyId, updates) => {
+    try {
+      return await databaseService.updateCreativeStrategy(strategyId, updates);
+    } catch (error) {
+      console.error('Update creative strategy IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to update creative strategy: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-generate-director-notes', async (event, strategyId) => {
+    try {
+      return await databaseService.generateDirectorNotes(strategyId);
+    } catch (error) {
+      console.error('Generate director notes IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to generate director notes: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  // ========== LLM HANDLERS ==========
+
+  // Initialize LLM service
+  const llmService = createLLMService();
+
+  ipcMain.handle('llm-generate-response', async (event, conversationId, persona, userMessage, context, agentConfig) => {
+    console.log('DEBUG: ===== LLM GENERATE RESPONSE HANDLER START =====');
+    console.log('DEBUG: conversationId:', conversationId);
+    console.log('DEBUG: persona:', persona);
+    console.log('DEBUG: userMessage:', userMessage?.substring(0, 50) + '...');
+    console.log('DEBUG: context:', context ? Object.keys(context) : 'null');
+    console.log('DEBUG: agentConfig received:', agentConfig);
+    
+    try {
+      console.log('DEBUG: About to call llmService.generateResponseWithConfig()');
+      const response = await llmService.generateResponseWithConfig(conversationId, persona, userMessage, context, agentConfig);
+      console.log('DEBUG: LLM response received:', { success: response.success, error: response.error });
+      
+      return {
+        success: response.success,
+        data: response.response,
+        error: response.error,
+        usage: response.usage,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('DEBUG: IPC handler exception:', error);
+      return {
+        success: false,
+        error: `Failed to generate LLM response: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('llm-clear-conversation', async (event, conversationId) => {
+    try {
+      llmService.clearConversation(conversationId);
+      return {
+        success: true,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Clear conversation failed:', error);
+      return {
+        success: false,
+        error: `Failed to clear conversation: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('llm-get-conversation-summary', async (event, conversationId) => {
+    try {
+      const summary = llmService.getConversationSummary(conversationId);
+      return {
+        success: true,
+        data: summary,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Get conversation summary failed:', error);
+      return {
+        success: false,
+        error: `Failed to get conversation summary: ${error}`,
+        timestamp: new Date()
+      };
+    }
   });
 
   ipcMain.handle('llm-generate-structured', async (event, persona, prompt, schema) => {
-    // Placeholder implementation for Phase 0
+    // This can be implemented later for structured output generation
     return {
       success: false,
-      error: 'LLM structured generation not yet implemented (Phase 0)',
+      error: 'Structured generation not yet implemented',
       timestamp: new Date()
     };
   });
@@ -383,6 +538,148 @@ export function setupIPCHandlers() {
       return {
         success: false,
         error: `Failed to get conversation: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  // ========== MODEL VALIDATION HANDLERS ==========
+
+  ipcMain.handle('model-check-availability', async (event, provider, apiKey) => {
+    try {
+      console.log(`DEBUG: Checking model availability for ${provider}`);
+      const result = await ModelAvailabilityService.checkAvailableModels(provider, apiKey);
+      
+      return {
+        success: result.success,
+        data: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Model availability check failed:', error);
+      return {
+        success: false,
+        error: `Failed to check model availability: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('model-validate', async (event, provider, modelId, apiKey) => {
+    try {
+      console.log(`DEBUG: Validating model ${modelId} for ${provider}`);
+      const result = await ModelAvailabilityService.validateModel(provider, modelId, apiKey);
+      
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Model validation failed:', error);
+      return {
+        success: false,
+        error: `Failed to validate model: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('agent-validate', async (event, persona) => {
+    try {
+      console.log(`DEBUG: Validating agent configuration for ${persona}`);
+      const result = await AgentConfigService.validateAgentConfig(persona);
+      
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Agent validation failed:', error);
+      return {
+        success: false,
+        error: `Failed to validate agent: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('agent-validate-all', async (event) => {
+    try {
+      console.log('DEBUG: Validating all agent configurations');
+      const result = await AgentConfigService.validateAllAgents();
+      
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('All agents validation failed:', error);
+      return {
+        success: false,
+        error: `Failed to validate all agents: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('agent-auto-fix', async (event, persona) => {
+    try {
+      console.log(`DEBUG: Auto-fixing agent configuration for ${persona}`);
+      const result = await AgentConfigService.autoFixAgentConfig(persona);
+      
+      return {
+        success: result.success,
+        data: result,
+        error: result.error,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Agent auto-fix failed:', error);
+      return {
+        success: false,
+        error: `Failed to auto-fix agent: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('agent-get-models-dynamic', async (event, provider, apiKey) => {
+    try {
+      console.log(`DEBUG: Getting dynamic models for ${provider}`);
+      const result = await AgentConfigService.getModelsForProviderDynamic(provider, apiKey);
+      
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Dynamic models fetch failed:', error);
+      return {
+        success: false,
+        error: `Failed to get dynamic models: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('model-clear-cache', async (event) => {
+    try {
+      console.log('DEBUG: Clearing model availability cache');
+      ModelAvailabilityService.clearCache();
+      
+      return {
+        success: true,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Clear model cache failed:', error);
+      return {
+        success: false,
+        error: `Failed to clear cache: ${error}`,
         timestamp: new Date()
       };
     }
@@ -444,6 +741,12 @@ export function setupIPCHandlers() {
         timestamp: new Date()
       };
     }
+  });
+
+  // Test handler to verify IPC communication
+  ipcMain.handle('test-ipc', async (event, message) => {
+    console.log('DEBUG: Test IPC handler called with message:', message);
+    return { success: true, message: `Echo: ${message}` };
   });
 
   console.log('IPC handlers setup completed');

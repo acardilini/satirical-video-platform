@@ -24,11 +24,26 @@ export interface ElectronAPI {
   };
   
   llm: {
-    generatePersonaResponse: (persona: string, prompt: string, context: any) => Promise<any>;
+    generatePersonaResponse: (conversationId: string, persona: string, userMessage: string, context: any, agentConfig?: any) => Promise<any>;
+    clearConversation: (conversationId: string) => Promise<any>;
+    getConversationSummary: (conversationId: string) => Promise<any>;
     generateStructuredOutput: (persona: string, prompt: string, schema: any) => Promise<any>;
     createConversation: (projectId: string, personas: string[]) => Promise<any>;
-    addMessage: (conversationId: string, message: any) => Promise<any>;
-    getConversationHistory: (conversationId: string) => Promise<any>;
+    addMessage: (conversationId: string, message: any) => Promise<void>;
+    getConversationHistory: (conversationId: string) => Promise<any[]>;
+  };
+
+  models: {
+    checkAvailability: (provider: string, apiKey?: string) => Promise<any>;
+    validateModel: (provider: string, modelId: string, apiKey?: string) => Promise<any>;
+    clearCache: () => Promise<any>;
+  };
+
+  agents: {
+    validate: (persona: string) => Promise<any>;
+    validateAll: () => Promise<any>;
+    autoFix: (persona: string) => Promise<any>;
+    getModelsDynamic: (provider: string, apiKey?: string) => Promise<any>;
   };
 }
 

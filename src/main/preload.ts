@@ -23,13 +23,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProjects: (userId: string) => ipcRenderer.invoke('db-get-projects', userId),
     getProjectById: (id: string) => ipcRenderer.invoke('db-get-project', id),
     updateProject: (id: string, data: any) => ipcRenderer.invoke('db-update-project', id, data),
+    deleteProject: (id: string) => ipcRenderer.invoke('db-delete-project', id),
 
     // News Article operations
     createNewsArticle: (articleData: any) => ipcRenderer.invoke('db-create-article', articleData),
     uploadNewsArticleFile: (fileData: any) => ipcRenderer.invoke('db-upload-article-file', fileData),
     getNewsArticlesByProject: (projectId: string) => ipcRenderer.invoke('db-get-articles-by-project', projectId),
     getNewsArticle: (id: string) => ipcRenderer.invoke('db-get-article', id),
+    updateNewsArticle: (id: string, updates: any) => ipcRenderer.invoke('db-update-news-article', id, updates),
     deleteNewsArticle: (id: string) => ipcRenderer.invoke('db-delete-article', id),
+
+    // Creative Strategy operations  
+    createCreativeStrategy: (strategyData: any) => ipcRenderer.invoke('db-create-creative-strategy', strategyData),
+    getCreativeStrategy: (projectId: string) => ipcRenderer.invoke('db-get-creative-strategy', projectId),
+    generateCreativeStrategy: (projectId: string) => ipcRenderer.invoke('db-generate-creative-strategy', projectId),
+    updateCreativeStrategy: (id: string, updates: any) => ipcRenderer.invoke('db-update-creative-strategy', id, updates),
+    generateDirectorNotes: (strategyId: string) => ipcRenderer.invoke('db-generate-director-notes', strategyId),
 
     // Director Notes operations
     createDirectorNotes: (notesData: any) => ipcRenderer.invoke('db-create-director-notes', notesData),
@@ -37,10 +46,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateDirectorNotes: (id: string, data: any) => ipcRenderer.invoke('db-update-director-notes', id, data),
   },
 
-  // LLM operations (will be implemented in Phase 0)
+  // LLM operations
   llm: {
-    generatePersonaResponse: (persona: string, prompt: string, context: any) => 
-      ipcRenderer.invoke('llm-generate-response', persona, prompt, context),
+    generatePersonaResponse: (conversationId: string, persona: string, userMessage: string, context: any, agentConfig?: any) => 
+      ipcRenderer.invoke('llm-generate-response', conversationId, persona, userMessage, context, agentConfig),
+    clearConversation: (conversationId: string) =>
+      ipcRenderer.invoke('llm-clear-conversation', conversationId),
+    getConversationSummary: (conversationId: string) =>
+      ipcRenderer.invoke('llm-get-conversation-summary', conversationId),
     generateStructuredOutput: (persona: string, prompt: string, schema: any) =>
       ipcRenderer.invoke('llm-generate-structured', persona, prompt, schema),
     createConversation: (projectId: string, personas: string[]) =>
@@ -49,6 +62,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('llm-add-message', conversationId, message),
     getConversationHistory: (conversationId: string) =>
       ipcRenderer.invoke('llm-get-conversation', conversationId)
+  },
+
+  // Model validation operations
+  models: {
+    checkAvailability: (provider: string, apiKey?: string) =>
+      ipcRenderer.invoke('model-check-availability', provider, apiKey),
+    validateModel: (provider: string, modelId: string, apiKey?: string) =>
+      ipcRenderer.invoke('model-validate', provider, modelId, apiKey),
+    clearCache: () =>
+      ipcRenderer.invoke('model-clear-cache')
+  },
+
+  // Agent validation operations
+  agents: {
+    validate: (persona: string) =>
+      ipcRenderer.invoke('agent-validate', persona),
+    validateAll: () =>
+      ipcRenderer.invoke('agent-validate-all'),
+    autoFix: (persona: string) =>
+      ipcRenderer.invoke('agent-auto-fix', persona),
+    getModelsDynamic: (provider: string, apiKey?: string) =>
+      ipcRenderer.invoke('agent-get-models-dynamic', provider, apiKey)
   },
 
   // File operations
@@ -64,7 +99,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     generateId: () => ipcRenderer.invoke('util-generate-id'),
     validateShotDuration: (seconds: number) => ipcRenderer.invoke('util-validate-duration', seconds),
     sanitizeInput: (input: string) => ipcRenderer.invoke('util-sanitize', input)
-  }
+  },
+
+  // Test IPC
+  testIPC: (message: string) => ipcRenderer.invoke('test-ipc', message)
 });
 
 // Type declarations for TypeScript
@@ -82,14 +120,23 @@ declare global {
         getProjects: (userId: string) => Promise<any[]>;
         getProjectById: (id: string) => Promise<any>;
         updateProject: (id: string, data: any) => Promise<any>;
+        deleteProject: (id: string) => Promise<any>;
         createNewsArticle: (articleData: any) => Promise<any>;
         getNewsArticle: (id: string) => Promise<any>;
+        updateNewsArticle: (id: string, updates: any) => Promise<any>;
+        createCreativeStrategy: (strategyData: any) => Promise<any>;
+        getCreativeStrategy: (projectId: string) => Promise<any>;
+        generateCreativeStrategy: (projectId: string) => Promise<any>;
+        updateCreativeStrategy: (id: string, updates: any) => Promise<any>;
+        generateDirectorNotes: (strategyId: string) => Promise<any>;
         createDirectorNotes: (notesData: any) => Promise<any>;
         getDirectorNotes: (projectId: string) => Promise<any>;
         updateDirectorNotes: (id: string, data: any) => Promise<any>;
       };
       llm: {
-        generatePersonaResponse: (persona: string, prompt: string, context: any) => Promise<string>;
+        generatePersonaResponse: (conversationId: string, persona: string, userMessage: string, context: any, agentConfig?: any) => Promise<any>;
+        clearConversation: (conversationId: string) => Promise<any>;
+        getConversationSummary: (conversationId: string) => Promise<any>;
         generateStructuredOutput: (persona: string, prompt: string, schema: any) => Promise<any>;
         createConversation: (projectId: string, personas: string[]) => Promise<any>;
         addMessage: (conversationId: string, message: any) => Promise<void>;
@@ -105,6 +152,7 @@ declare global {
         validateShotDuration: (seconds: number) => Promise<boolean>;
         sanitizeInput: (input: string) => Promise<string>;
       };
+      testIPC: (message: string) => Promise<any>;
     };
   }
 }
