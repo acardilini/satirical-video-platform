@@ -121,6 +121,9 @@ export class ProjectsManager {
           <button class="btn btn-primary btn-open-project" data-project-id="${project.id}">
             Open Project
           </button>
+          <button class="btn btn-danger btn-delete-project" data-project-id="${project.id}" title="Delete Project">
+            🗑️ Delete
+          </button>
         </div>
       </div>
     `;
@@ -180,6 +183,15 @@ export class ProjectsManager {
       btn.addEventListener('click', (e) => {
         const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
         if (projectId) this.openProject(projectId);
+      });
+    });
+
+    // Delete project
+    const deleteBtns = document.querySelectorAll('.btn-delete-project');
+    deleteBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
+        if (projectId) this.deleteProject(projectId);
       });
     });
   }
@@ -249,7 +261,7 @@ This will be replaced with a proper details modal in Phase 1.2
       
       // Create project workspace HTML
       const workspaceHTML = `
-        <div class="project-workspace">
+        <div class="project-workspace" data-project-id="${project.id}">
           <div class="project-header">
             <div>
               <h1 class="project-title">${this.escapeHtml(project.name)}</h1>
@@ -260,7 +272,7 @@ This will be replaced with a proper details modal in Phase 1.2
               </div>
             </div>
             <div class="project-actions">
-              <button class="btn btn-secondary" onclick="projectsManager.showProjectsList()">
+              <button class="btn btn-secondary" id="back-to-projects-btn">
                 ← Back to Projects
               </button>
               <button class="btn btn-primary" id="upload-article-btn">
@@ -291,10 +303,9 @@ This will be replaced with a proper details modal in Phase 1.2
           </div>
 
           <div class="tab-content" id="strategy-tab">
-            <div class="empty-state">
-              <div class="empty-state-icon">🎯</div>
-              <h3>Creative Strategy</h3>
-              <p>Creative strategy and director's notes will be implemented in Module 2.</p>
+            <div class="loading-text">
+              <span class="loading-spinner"></span>
+              Loading creative strategy...
             </div>
           </div>
 
@@ -365,6 +376,12 @@ This will be replaced with a proper details modal in Phase 1.2
    * Setup workspace event listeners
    */
   private setupWorkspaceEventListeners(project: any) {
+    // Back to projects button
+    const backBtn = document.getElementById('back-to-projects-btn');
+    backBtn?.addEventListener('click', () => {
+      this.showProjectsList();
+    });
+
     // Upload article button
     const uploadBtn = document.getElementById('upload-article-btn');
     uploadBtn?.addEventListener('click', () => {
@@ -404,17 +421,51 @@ This will be replaced with a proper details modal in Phase 1.2
     selectedTab?.classList.add('active');
     selectedContent?.classList.add('active');
 
-    // If switching to overview tab, refresh dashboard data
-    if (tabId === 'overview') {
-      const projectWorkspace = document.querySelector('.project-workspace');
-      if (projectWorkspace) {
-        // Get current project ID from workspace (stored in the project header)
-        const projectTitle = projectWorkspace.querySelector('.project-title');
-        if (projectTitle) {
-          // We'll need to store project ID somewhere accessible
-          // For now, trigger a dashboard refresh event
-          window.dispatchEvent(new CustomEvent('refreshDashboard'));
-        }
+    // Get current project ID from the workspace context
+    const currentProjectId = this.getCurrentProjectId();
+    
+    // Handle tab-specific initialization
+    if (tabId === 'overview' && currentProjectId) {
+      // Refresh dashboard data
+      window.dispatchEvent(new CustomEvent('refreshDashboard'));
+    } else if (tabId === 'strategy' && currentProjectId) {
+      // Initialize Creative Strategy component
+      this.initializeCreativeStrategy(currentProjectId);
+    }
+  }
+
+  /**
+   * Get current project ID from workspace context
+   */
+  private getCurrentProjectId(): string | null {
+    const projectWorkspace = document.querySelector('.project-workspace');
+    if (!projectWorkspace) return null;
+    
+    // We can get the project ID from the data attribute we'll add
+    return projectWorkspace.getAttribute('data-project-id');
+  }
+
+  /**
+   * Initialize Creative Strategy component
+   */
+  private async initializeCreativeStrategy(projectId: string): Promise<void> {
+    try {
+      const { creativeStrategyManager } = await import('./CreativeStrategy.js');
+      await creativeStrategyManager.initialize(projectId);
+    } catch (error) {
+      console.error('Failed to initialize Creative Strategy:', error);
+      const strategyTab = document.getElementById('strategy-tab');
+      if (strategyTab) {
+        strategyTab.innerHTML = `
+          <div class="strategy-error">
+            <div class="error-icon">❌</div>
+            <h3>Creative Strategy Error</h3>
+            <p>Failed to load Creative Strategy component</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              Retry
+            </button>
+          </div>
+        `;
       }
     }
   }
@@ -512,6 +563,9 @@ This will be replaced with a proper details modal in Phase 1.2
           <button class="btn btn-outline btn-view-article" data-article-id="${article.id}">
             View Full Article
           </button>
+          <button class="btn btn-secondary btn-edit-article" data-article-id="${article.id}">
+            Edit
+          </button>
           <button class="btn btn-danger btn-delete-article" data-article-id="${article.id}">
             Delete
           </button>
@@ -530,6 +584,15 @@ This will be replaced with a proper details modal in Phase 1.2
       btn.addEventListener('click', (e) => {
         const articleId = (e.target as HTMLElement).getAttribute('data-article-id');
         if (articleId) this.viewArticle(articleId);
+      });
+    });
+
+    // Edit article
+    const editBtns = document.querySelectorAll('.btn-edit-article');
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const articleId = (e.target as HTMLElement).getAttribute('data-article-id');
+        if (articleId) this.editArticle(articleId);
       });
     });
 
@@ -575,6 +638,28 @@ ${article.processing_notes ? `Processing Notes: ${article.processing_notes}` : '
   }
 
   /**
+   * Edit article
+   */
+  private async editArticle(articleId: string): Promise<void> {
+    try {
+      const result = await window.electronAPI.database.getNewsArticle(articleId);
+      
+      if (result.success) {
+        const article = result.data;
+        
+        // Import and open the news article upload component in edit mode
+        const { newsArticleUpload } = await import('./NewsArticleUpload.js');
+        newsArticleUpload.openForEdit(article);
+      } else {
+        this.showError('Failed to load article for editing');
+      }
+    } catch (error) {
+      console.error('Error loading article for edit:', error);
+      this.showError('Error loading article for edit');
+    }
+  }
+
+  /**
    * Delete article
    */
   private async deleteArticle(articleId: string) {
@@ -599,6 +684,75 @@ ${article.processing_notes ? `Processing Notes: ${article.processing_notes}` : '
     } catch (error) {
       console.error('Error deleting article:', error);
       this.showError('Error deleting article');
+    }
+  }
+
+  /**
+   * Delete project with confirmation
+   */
+  private async deleteProject(projectId: string): Promise<void> {
+    try {
+      // Find the project to get its name for confirmation
+      const project = this.projects.find(p => p.id === projectId);
+      if (!project) {
+        this.showError('Project not found');
+        return;
+      }
+
+      // Show confirmation dialog
+      const confirmed = confirm(
+        `Are you sure you want to delete the project "${project.name}"?\n\n` +
+        `This will permanently delete:\n` +
+        `• The project and all its settings\n` +
+        `• All uploaded news articles\n` +
+        `• Any generated creative strategies\n` +
+        `• All associated data\n\n` +
+        `This action cannot be undone!`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      // Show loading state
+      const deleteBtn = document.querySelector(`[data-project-id="${projectId}"].btn-delete-project`) as HTMLButtonElement;
+      if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = 'Deleting...';
+      }
+
+      // Call database to delete project
+      // @ts-ignore
+      const result = await window.electronAPI.database.deleteProject(projectId);
+
+      if (result.success) {
+        // Remove from local projects array
+        this.projects = this.projects.filter(p => p.id !== projectId);
+        
+        // Re-render the projects list
+        this.renderProjects();
+        
+        // Show success message
+        this.showSuccess(`Project "${project.name}" has been deleted successfully`);
+      } else {
+        this.showError(result.error || 'Failed to delete project');
+        
+        // Re-enable button on failure
+        if (deleteBtn) {
+          deleteBtn.disabled = false;
+          deleteBtn.innerHTML = '🗑️ Delete';
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      this.showError('An error occurred while deleting the project');
+      
+      // Re-enable button on error
+      const deleteBtn = document.querySelector(`[data-project-id="${projectId}"].btn-delete-project`) as HTMLButtonElement;
+      if (deleteBtn) {
+        deleteBtn.disabled = false;
+        deleteBtn.innerHTML = '🗑️ Delete';
+      }
     }
   }
 
@@ -682,6 +836,15 @@ ${article.processing_notes ? `Processing Notes: ${article.processing_notes}` : '
         </div>
       `;
     }
+  }
+
+  /**
+   * Show success message
+   */
+  private showSuccess(message: string): void {
+    console.log(`✅ ${message}`);
+    // Simple alert for now - will be enhanced with proper toast system later
+    alert(`✅ ${message}`);
   }
 
   /**

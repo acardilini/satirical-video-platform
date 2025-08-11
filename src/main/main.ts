@@ -1,8 +1,12 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+import dotenv from 'dotenv';
 import { databaseService } from '../database/database';
 import { AuthService } from '../services/auth';
 import { setupIPCHandlers } from './ipc-handlers';
+
+// Load environment variables
+dotenv.config();
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow | null = null;

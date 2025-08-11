@@ -47,9 +47,66 @@ export interface NewsArticle {
   updated_at?: Date;
 }
 
+// Creative Strategy Types
+export type CreativeStrategyStatus = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'NEEDS_REVISION';
+export type SatiricalTone = 'SUBTLE' | 'OVERT' | 'ABSURDIST' | 'DRY_WIT' | 'SATIRICAL_NEWS';
+export type TargetAudience = 'GENERAL' | 'POLITICAL_SATIRE' | 'SOCIAL_COMMENTARY' | 'MILLENNIAL' | 'GEN_Z';
+
+export interface SatiricalAngle {
+  angle_type: 'IRONY' | 'EXAGGERATION' | 'PARODY' | 'SUBVERSION';
+  description: string;
+  key_elements: string[];
+}
+
+export interface CharacterArchetype {
+  name: string;
+  role: string;
+  satirical_traits: string[];
+  visual_description?: string;
+}
+
+export interface CreativeStrategy {
+  id: string;
+  project_id: string;
+  director_notes_id?: string; // Links to DirectorNotes if generated from there
+  
+  // Core Strategy Elements
+  creative_concept: string;
+  satirical_angles: SatiricalAngle[];
+  target_audience: TargetAudience;
+  tone: SatiricalTone;
+  
+  // Content Framework
+  key_themes: string[];
+  character_archetypes: CharacterArchetype[];
+  visual_style_guide: {
+    color_palette?: string;
+    cinematography_notes?: string;
+    overall_aesthetic?: string;
+  };
+  
+  // Validation Schema
+  validation_criteria: {
+    theme_consistency: boolean;
+    character_coherence: boolean;
+    satirical_effectiveness: boolean;
+    technical_feasibility: boolean;
+  };
+  
+  // Metadata
+  status: CreativeStrategyStatus;
+  version: number;
+  generated_by_persona?: PersonaType;
+  created_by: string; // User ID
+  approved_by?: string; // User ID
+  created_at: Date;
+  updated_at?: Date;
+}
+
 export interface DirectorNotes {
   id: string;
   project_id: string;
+  creative_strategy_id?: string; // Links to CreativeStrategy
   summary: string;
   satirical_hook: string;
   characters: string;

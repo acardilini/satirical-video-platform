@@ -137,3 +137,21 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Security: API keys and sensitive data
+*.key
+*.pem
+config/secrets.json
+secrets.json
+.secret
+.secrets
+*-secrets.json
+api-keys.json
+keys.json
+
+# Local app data directory
+.satirical-video-platform/
+
+# Temporary API key files
+temp-keys*
+*.apikey

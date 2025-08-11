@@ -7,6 +7,8 @@ export class NewsArticleUpload {
   private modal: HTMLElement | null = null;
   private isOpen = false;
   private currentProjectId: string | null = null;
+  private isEditMode = false;
+  private currentArticle: any = null;
 
   constructor() {
     this.createModal();
@@ -278,8 +280,31 @@ export class NewsArticleUpload {
    */
   public open(projectId: string) {
     this.currentProjectId = projectId;
+    this.isEditMode = false;
+    this.currentArticle = null;
     
     if (this.modal) {
+      this.updateModalTitle();
+      this.modal.style.display = 'flex';
+      this.isOpen = true;
+      
+      // Focus on title input
+      const titleInput = document.getElementById('article-title') as HTMLInputElement;
+      setTimeout(() => titleInput?.focus(), 100);
+    }
+  }
+
+  /**
+   * Open modal for editing existing article
+   */
+  public openForEdit(article: any) {
+    this.currentProjectId = article.project_id;
+    this.isEditMode = true;
+    this.currentArticle = article;
+    
+    if (this.modal) {
+      this.updateModalTitle();
+      this.populateFormWithArticle(article);
       this.modal.style.display = 'flex';
       this.isOpen = true;
       
@@ -301,6 +326,60 @@ export class NewsArticleUpload {
   }
 
   /**
+   * Update modal title based on edit mode
+   */
+  private updateModalTitle(): void {
+    // Use setTimeout to ensure DOM elements are available
+    setTimeout(() => {
+      const titleElement = this.modal?.querySelector('.modal-header h2');
+      const submitButton = this.modal?.querySelector('#article-upload-form button[type="submit"]');
+      
+      if (titleElement && submitButton) {
+        if (this.isEditMode) {
+          titleElement.textContent = 'Edit News Article';
+          (submitButton as HTMLElement).textContent = 'Save Changes';
+        } else {
+          titleElement.textContent = 'Upload News Article';
+          (submitButton as HTMLElement).textContent = 'Upload Article';
+        }
+      } else {
+        console.log('Could not find modal elements for title update', { titleElement, submitButton });
+      }
+    }, 50);
+  }
+
+  /**
+   * Populate form with existing article data
+   */
+  private populateFormWithArticle(article: any): void {
+    // Fill in basic fields
+    const titleInput = document.getElementById('article-title') as HTMLInputElement;
+    const sourceInput = document.getElementById('article-source') as HTMLInputElement;
+    const urlInput = document.getElementById('article-url') as HTMLInputElement;
+    const notesInput = document.getElementById('article-notes') as HTMLTextAreaElement;
+    
+    if (titleInput) titleInput.value = article.title || '';
+    if (sourceInput) sourceInput.value = article.source || '';
+    if (urlInput) urlInput.value = article.url || '';
+    if (notesInput) notesInput.value = article.processing_notes || '';
+
+    // Switch to text paste mode and fill content
+    const pasteRadio = document.querySelector('input[name="upload-method"][value="paste"]') as HTMLInputElement;
+    if (pasteRadio) {
+      pasteRadio.checked = true;
+      this.toggleUploadMethod();
+      
+      const contentTextarea = document.getElementById('article-content') as HTMLTextAreaElement;
+      if (contentTextarea) {
+        contentTextarea.value = article.content || '';
+      }
+    }
+
+    // Refresh modal title after populating form
+    this.updateModalTitle();
+  }
+
+  /**
    * Reset form to initial state
    */
   private resetForm() {
@@ -311,6 +390,8 @@ export class NewsArticleUpload {
     this.clearSelectedFile();
     this.toggleUploadMethod(); // Reset to file upload mode
     this.currentProjectId = null;
+    this.isEditMode = false;
+    this.currentArticle = null;
   }
 
   /**
@@ -414,8 +495,20 @@ export class NewsArticleUpload {
 
       let result;
       
-      if (uploadMethod.value === 'file') {
-        // Handle file upload
+      if (this.isEditMode && this.currentArticle) {
+        // Update existing article (only supports text content for editing)
+        console.log('Updating article:', this.currentArticle.id, articleData);
+        console.log('Edit mode confirmed:', { isEditMode: this.isEditMode, currentArticle: this.currentArticle });
+        try {
+          // @ts-ignore  
+          result = await window.electronAPI.database.updateNewsArticle(this.currentArticle.id, articleData);
+          console.log('Update result:', result);
+        } catch (updateError) {
+          console.error('Direct update error:', updateError);
+          throw updateError;
+        }
+      } else if (uploadMethod.value === 'file') {
+        // Handle file upload for new articles
         const fileInput = document.getElementById('article-file') as HTMLInputElement;
         const file = fileInput.files![0];
         
@@ -430,27 +523,30 @@ export class NewsArticleUpload {
           fileType: file.type || 'text/plain'
         });
       } else {
-        // Handle text paste
+        // Handle text paste for new articles
         result = await window.electronAPI.database.createNewsArticle(articleData);
       }
 
       if (result.success) {
-        this.showSuccess('News article uploaded successfully!');
+        this.showSuccess(this.isEditMode ? 'News article updated successfully!' : 'News article uploaded successfully!');
         this.close();
         
         // Refresh project view if applicable
         this.refreshProjectView();
       } else {
-        this.showError(result.error || 'Failed to upload article');
+        console.error('Operation failed:', result);
+        this.showError(result.error || (this.isEditMode ? 'Failed to update article' : 'Failed to upload article'));
       }
     } catch (error) {
-      console.error('Article upload failed:', error);
-      this.showError('Failed to upload article. Please try again.');
+      console.error(this.isEditMode ? 'Article update failed:' : 'Article upload failed:', error);
+      this.showError(this.isEditMode ? 'Failed to update article. Please try again.' : 'Failed to upload article. Please try again.');
     } finally {
       // Re-enable submit button
       const submitBtn = document.querySelector('#article-upload-form button[type="submit"]') as HTMLButtonElement;
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Upload Article';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = this.isEditMode ? 'Save Changes' : 'Upload Article';
+      }
     }
   }
 

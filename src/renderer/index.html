@@ -229,8 +229,98 @@
             
             <div id="settings" class="section" style="display: none;">
                 <div class="card">
-                    <h2>Settings</h2>
-                    <p>Application settings and configuration options.</p>
+                    <h2>⚙️ Settings</h2>
+                    <p>Configure your application settings and AI providers.</p>
+                    
+                    <div class="settings-section">
+                        <h3>🔑 AI Provider Configuration</h3>
+                        <p><strong>Important:</strong> Set up your API keys for AI-powered personas. Configure once, use across all agents.</p>
+                        
+                        <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                            <h4 style="margin: 0 0 0.5rem; color: #495057;">Quick Setup Guide:</h4>
+                            <ol style="margin: 0; padding-left: 1.5rem; color: #6c757d;">
+                                <li>Click "Configure API Keys" below</li>
+                                <li>Add your API keys for OpenAI, Anthropic, or Gemini</li>
+                                <li>Test connections to verify they work</li>
+                                <li>Configure individual agents to use specific models</li>
+                            </ol>
+                        </div>
+                        
+                        <button id="open-global-api-settings" class="btn btn-primary" style="font-size: 16px; padding: 12px 24px; margin: 10px 0;">
+                            🚀 Configure API Keys
+                        </button>
+                        
+                        <div id="api-status" class="api-status-section" style="margin-top: 1rem;">
+                            <div style="color: #6c757d; font-style: italic;">Loading API status...</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" style="margin-top: 2rem;">
+                        <h3>🤖 AI Agent Configuration</h3>
+                        <p>Configure individual AI agents to use specific models from your available providers.</p>
+                        <div class="agent-settings-grid">
+                            <div class="agent-setting-item" data-persona="CREATIVE_STRATEGIST">
+                                <div class="agent-icon">🎯</div>
+                                <div class="agent-info">
+                                    <h4>Creative Strategist</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="CREATIVE_STRATEGIST">
+                                    Configure
+                                </button>
+                            </div>
+                            <div class="agent-setting-item" data-persona="SATIRICAL_SCREENWRITER">
+                                <div class="agent-icon">✍️</div>
+                                <div class="agent-info">
+                                    <h4>Satirical Screenwriter</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="SATIRICAL_SCREENWRITER">
+                                    Configure
+                                </button>
+                            </div>
+                            <div class="agent-setting-item" data-persona="CINEMATIC_STORYBOARDER">
+                                <div class="agent-icon">🎬</div>
+                                <div class="agent-info">
+                                    <h4>Cinematic Storyboarder</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="CINEMATIC_STORYBOARDER">
+                                    Configure
+                                </button>
+                            </div>
+                            <div class="agent-setting-item" data-persona="SOUNDSCAPE_ARCHITECT">
+                                <div class="agent-icon">🎵</div>
+                                <div class="agent-info">
+                                    <h4>Soundscape Architect</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="SOUNDSCAPE_ARCHITECT">
+                                    Configure
+                                </button>
+                            </div>
+                            <div class="agent-setting-item" data-persona="VIDEO_PROMPT_ENGINEER">
+                                <div class="agent-icon">🤖</div>
+                                <div class="agent-info">
+                                    <h4>Video Prompt Engineer</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="VIDEO_PROMPT_ENGINEER">
+                                    Configure
+                                </button>
+                            </div>
+                            <div class="agent-setting-item" data-persona="BAFFLING_BROADCASTER">
+                                <div class="agent-icon">📺</div>
+                                <div class="agent-info">
+                                    <h4>Baffling Broadcaster</h4>
+                                    <span class="agent-status">Not configured</span>
+                                </div>
+                                <button class="btn btn-outline configure-agent-btn" data-persona="BAFFLING_BROADCASTER">
+                                    Configure
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             

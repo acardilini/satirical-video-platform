@@ -157,8 +157,8 @@ export class ProjectDashboard {
             <span class="progress-text">${this.projectStats.completedPhases}/${this.projectStats.totalPhases} phases completed (${Math.round(progressPercentage)}%)</span>
           </div>
           
-          <div class="phase-checklist">
-            ${this.renderPhaseChecklist()}
+          <div class="phase-checklist" id="phase-checklist-container">
+            <!-- Phase checklist will be loaded here -->
           </div>
         </div>
 
@@ -220,10 +220,10 @@ export class ProjectDashboard {
               <div class="action-description">Add source material for satirical content</div>
             </button>
             
-            <button class="quick-action-btn disabled" data-action="create-strategy">
+            <button class="quick-action-btn" data-action="create-strategy">
               <div class="action-icon">🎯</div>
               <div class="action-title">Create Strategy</div>
-              <div class="action-description">Develop creative direction (Module 2)</div>
+              <div class="action-description">Develop creative direction</div>
             </button>
             
             <button class="quick-action-btn disabled" data-action="develop-script">
@@ -244,8 +244,9 @@ export class ProjectDashboard {
 
     this.setupEventListeners();
     
-    // Load activity feed asynchronously
+    // Load activity feed and phase checklist asynchronously
     this.loadActivityFeed();
+    this.loadPhaseChecklist();
   }
 
   /**
@@ -269,12 +270,42 @@ export class ProjectDashboard {
   }
 
   /**
+   * Load phase checklist asynchronously
+   */
+  private async loadPhaseChecklist(): Promise<void> {
+    const container = document.getElementById('phase-checklist-container');
+    if (!container || !this.currentProject) return;
+
+    try {
+      const checklistHTML = await this.renderPhaseChecklist();
+      container.innerHTML = checklistHTML;
+    } catch (error) {
+      console.error('Failed to load phase checklist:', error);
+      container.innerHTML = `
+        <div class="phase-error">
+          <p>Failed to load phase checklist</p>
+        </div>
+      `;
+    }
+  }
+
+  /**
    * Render phase checklist
    */
-  private renderPhaseChecklist(): string {
+  private async renderPhaseChecklist(): Promise<string> {
+    // Check if creative strategy exists
+    let hasCreativeStrategy = false;
+    try {
+      // @ts-ignore
+      const strategyResult = await window.electronAPI.database.getCreativeStrategy(this.currentProject!.id);
+      hasCreativeStrategy = strategyResult.success;
+    } catch (error) {
+      console.error('Failed to check creative strategy:', error);
+    }
+
     const phases = [
       { id: 'articles', name: 'News Article Ingestion', completed: this.projectStats!.totalArticles > 0 },
-      { id: 'strategy', name: 'Creative Strategy', completed: false },
+      { id: 'strategy', name: 'Creative Strategy', completed: hasCreativeStrategy },
       { id: 'script', name: 'Script Development', completed: false },
       { id: 'storyboard', name: 'Visual Storyboard', completed: false },
       { id: 'sound', name: 'Sound Design', completed: false },
@@ -446,7 +477,7 @@ export class ProjectDashboard {
         this.openArticleUpload();
         break;
       case 'create-strategy':
-        alert('Creative Strategy module will be available in Module 2');
+        this.switchToStrategyTab();
         break;
       case 'develop-script':
         alert('Script Development module will be available in Module 3');
@@ -477,6 +508,16 @@ export class ProjectDashboard {
     const articlesTab = document.querySelector('[data-tab="articles"]') as HTMLElement;
     if (articlesTab) {
       articlesTab.click();
+    }
+  }
+
+  /**
+   * Switch to strategy tab
+   */
+  private switchToStrategyTab(): void {
+    const strategyTab = document.querySelector('[data-tab="strategy"]') as HTMLElement;
+    if (strategyTab) {
+      strategyTab.click();
     }
   }
 
