@@ -251,22 +251,22 @@ export class AgentConfigService {
     switch (provider) {
       case 'openai':
         return [
-          { value: 'gpt-4o', label: 'GPT-4o (Latest & Fastest)' },
-          { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost Effective)' },
-          { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (128k context)' },
-          { value: 'gpt-4', label: 'GPT-4 (Stable)' },
-          { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (Budget)' },
-          { value: 'o1-preview', label: 'o1 Preview (Advanced Reasoning)' },
-          { value: 'o1-mini', label: 'o1 Mini (Reasoning)' }
+          { value: 'gpt-4o', label: 'GPT-4o (Recommended - Multimodal)' },
+          { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast & Affordable)' },
+          { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Large Context)' },
+          { value: 'gpt-4', label: 'GPT-4 (Reliable)' },
+          { value: 'o1-preview', label: 'o1 Preview (Complex Reasoning)' },
+          { value: 'o1-mini', label: 'o1 Mini (Reasoning - Budget)' },
+          { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (Budget)' }
         ];
       case 'anthropic':
         return [
-          { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Latest & Best)' },
-          { value: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet (Previous)' },
-          { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Smart)' },
-          { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Most Capable)' },
-          { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet (Balanced)' },
-          { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku (Fast & Affordable)' }
+          { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Recommended - Latest)' },
+          { value: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet (Previous Version)' },
+          { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fastest)' },
+          { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Complex Reasoning)' },
+          { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet (Stable)' },
+          { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku (Budget)' }
         ];
       case 'gemini':
         return [

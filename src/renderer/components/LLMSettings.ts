@@ -178,25 +178,25 @@ export class LLMSettings {
     
     if (provider === 'openai') {
       modelSelect.innerHTML += `
-        <option value="gpt-4o">GPT-4o (Latest & Fastest)</option>
-        <option value="gpt-4o-mini">GPT-4o Mini (Cost Effective)</option>
-        <option value="gpt-4-turbo">GPT-4 Turbo (128k context)</option>
-        <option value="gpt-4">GPT-4 (Stable)</option>
+        <option value="gpt-4o">GPT-4o (Recommended - Multimodal)</option>
+        <option value="gpt-4o-mini">GPT-4o Mini (Fast & Affordable)</option>
+        <option value="gpt-4-turbo">GPT-4 Turbo (Large Context)</option>
+        <option value="gpt-4">GPT-4 (Reliable)</option>
+        <option value="o1-preview">o1 Preview (Complex Reasoning)</option>
+        <option value="o1-mini">o1 Mini (Reasoning - Budget)</option>
         <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Budget)</option>
-        <option value="o1-preview">o1 Preview (Advanced Reasoning)</option>
-        <option value="o1-mini">o1 Mini (Reasoning)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from OpenAI Platform';
       apiKeyLinks.innerHTML = '<a href="https://platform.openai.com/api-keys" target="_blank">Get OpenAI API Key</a>';
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'anthropic') {
       modelSelect.innerHTML += `
-        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Latest & Best)</option>
-        <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Previous)</option>
-        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Fast & Smart)</option>
-        <option value="claude-3-opus-20240229">Claude 3 Opus (Most Capable)</option>
-        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Balanced)</option>
-        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Fast & Affordable)</option>
+        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommended - Latest)</option>
+        <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Previous Version)</option>
+        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Fastest)</option>
+        <option value="claude-3-opus-20240229">Claude 3 Opus (Complex Reasoning)</option>
+        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Stable)</option>
+        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Budget)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from Anthropic Console';
       apiKeyLinks.innerHTML = '<a href="https://console.anthropic.com/" target="_blank">Get Anthropic API Key</a>';
