@@ -6,6 +6,7 @@ import { generateId, validateShotDuration, sanitizeInput } from '../shared/utils
 import { createLLMService } from '../services/llm.js';
 import { ModelAvailabilityService } from '../services/model-availability.js';
 import { AgentConfigService } from '../services/agent-config.js';
+import { projectDirectorService } from '../services/project-director.js';
 
 /**
  * Setup all IPC handlers for main-renderer communication
@@ -181,6 +182,19 @@ export function setupIPCHandlers() {
       return {
         success: false,
         error: `Failed to update project: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-update-project-format', async (event, projectId, formatType) => {
+    try {
+      return await databaseService.updateProjectFormat(projectId, formatType);
+    } catch (error) {
+      console.error('Update project format IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to update project format: ${error}`,
         timestamp: new Date()
       };
     }
@@ -374,6 +388,19 @@ export function setupIPCHandlers() {
       return {
         success: false,
         error: `Failed to get creative strategy: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-update-project-context', async (event, projectId, contextType) => {
+    try {
+      return await databaseService.updateProjectContext(projectId, contextType);
+    } catch (error) {
+      console.error('Update project context IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to update project context: ${error}`,
         timestamp: new Date()
       };
     }
@@ -747,6 +774,115 @@ export function setupIPCHandlers() {
   ipcMain.handle('test-ipc', async (event, message) => {
     console.log('DEBUG: Test IPC handler called with message:', message);
     return { success: true, message: `Echo: ${message}` };
+  });
+
+  // ========== PROJECT DIRECTOR HANDLERS ==========
+  
+  ipcMain.handle('project-director-initialize', async (event, projectId) => {
+    try {
+      // Initialize LLM service if needed
+      if (!projectDirectorService['llmService']) {
+        const llmService = createLLMService();
+        projectDirectorService['llmService'] = llmService;
+      }
+      
+      // Get project context
+      const projectResult = await databaseService.getProjectById(projectId);
+      const articlesResult = await databaseService.getNewsArticlesByProject(projectId);
+      const strategyResult = await databaseService.getCreativeStrategy(projectId);
+      
+      const projectContext = {
+        project: projectResult.success ? projectResult.data : null,
+        articles: articlesResult.success ? articlesResult.data : [],
+        creativeStrategy: strategyResult.success ? strategyResult.data : null
+      };
+      
+      await projectDirectorService.initializeForProject(projectId, projectContext);
+      
+      return {
+        success: true,
+        data: { message: 'Project Director initialized successfully' },
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Project Director initialization failed:', error);
+      return {
+        success: false,
+        error: `Project Director initialization failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+  
+  ipcMain.handle('project-director-health-check', async (event, projectId) => {
+    try {
+      // Get fresh project context
+      const projectResult = await databaseService.getProjectById(projectId);
+      const articlesResult = await databaseService.getNewsArticlesByProject(projectId);
+      const strategyResult = await databaseService.getCreativeStrategy(projectId);
+      
+      const projectContext = {
+        project: projectResult.success ? projectResult.data : null,
+        articles: articlesResult.success ? articlesResult.data : [],
+        creativeStrategy: strategyResult.success ? strategyResult.data : null
+      };
+      
+      // Initialize if needed
+      await projectDirectorService.initializeForProject(projectId, projectContext);
+      
+      const healthCheck = await projectDirectorService.performHealthCheck();
+      
+      return {
+        success: true,
+        data: healthCheck,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Project Director health check failed:', error);
+      return {
+        success: false,
+        error: `Health check failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+  
+  ipcMain.handle('project-director-strategic-guidance', async (event, query) => {
+    try {
+      const guidance = await projectDirectorService.getStrategicGuidance(query);
+      
+      return {
+        success: true,
+        data: guidance,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Strategic guidance failed:', error);
+      return {
+        success: false,
+        error: `Strategic guidance failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+  
+  ipcMain.handle('project-director-monitor-conversation', async (event, persona, userMessage, agentResponse) => {
+    try {
+      const qualityIssues = await projectDirectorService.monitorAgentConversation(persona, userMessage, agentResponse);
+      
+      return {
+        success: true,
+        data: qualityIssues,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Conversation monitoring failed:', error);
+      return {
+        success: false,
+        error: `Conversation monitoring failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
   });
 
   console.log('IPC handlers setup completed');

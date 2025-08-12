@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProjects: (userId: string) => ipcRenderer.invoke('db-get-projects', userId),
     getProjectById: (id: string) => ipcRenderer.invoke('db-get-project', id),
     updateProject: (id: string, data: any) => ipcRenderer.invoke('db-update-project', id, data),
+    updateProjectFormat: (projectId: string, formatType: string) => ipcRenderer.invoke('db-update-project-format', projectId, formatType),
     deleteProject: (id: string) => ipcRenderer.invoke('db-delete-project', id),
 
     // News Article operations
@@ -36,6 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Creative Strategy operations  
     createCreativeStrategy: (strategyData: any) => ipcRenderer.invoke('db-create-creative-strategy', strategyData),
     getCreativeStrategy: (projectId: string) => ipcRenderer.invoke('db-get-creative-strategy', projectId),
+    updateProjectContext: (projectId: string, contextType: string) => ipcRenderer.invoke('db-update-project-context', projectId, contextType),
     generateCreativeStrategy: (projectId: string) => ipcRenderer.invoke('db-generate-creative-strategy', projectId),
     updateCreativeStrategy: (id: string, updates: any) => ipcRenderer.invoke('db-update-creative-strategy', id, updates),
     generateDirectorNotes: (strategyId: string) => ipcRenderer.invoke('db-generate-director-notes', strategyId),
@@ -100,6 +102,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     validateShotDuration: (seconds: number) => ipcRenderer.invoke('util-validate-duration', seconds),
     sanitizeInput: (input: string) => ipcRenderer.invoke('util-sanitize', input)
   },
+  
+  // Project Director operations
+  projectDirector: {
+    initialize: (projectId: string) => ipcRenderer.invoke('project-director-initialize', projectId),
+    performHealthCheck: (projectId: string) => ipcRenderer.invoke('project-director-health-check', projectId),
+    getStrategicGuidance: (query: string) => ipcRenderer.invoke('project-director-strategic-guidance', query),
+    monitorConversation: (persona: string, userMessage: string, agentResponse: string) => 
+      ipcRenderer.invoke('project-director-monitor-conversation', persona, userMessage, agentResponse)
+  },
 
   // Test IPC
   testIPC: (message: string) => ipcRenderer.invoke('test-ipc', message)
@@ -120,6 +131,7 @@ declare global {
         getProjects: (userId: string) => Promise<any[]>;
         getProjectById: (id: string) => Promise<any>;
         updateProject: (id: string, data: any) => Promise<any>;
+        updateProjectFormat: (projectId: string, formatType: string) => Promise<any>;
         deleteProject: (id: string) => Promise<any>;
         createNewsArticle: (articleData: any) => Promise<any>;
         getNewsArticle: (id: string) => Promise<any>;
@@ -151,6 +163,12 @@ declare global {
         generateId: () => Promise<string>;
         validateShotDuration: (seconds: number) => Promise<boolean>;
         sanitizeInput: (input: string) => Promise<string>;
+      };
+      projectDirector: {
+        initialize: (projectId: string) => Promise<any>;
+        performHealthCheck: (projectId: string) => Promise<any>;
+        getStrategicGuidance: (query: string) => Promise<any>;
+        monitorConversation: (persona: string, userMessage: string, agentResponse: string) => Promise<any>;
       };
       testIPC: (message: string) => Promise<any>;
     };
