@@ -11,6 +11,19 @@ export type PersonaType =
 
 export type ProjectStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 
+export type SatiricalContextType = 'ANIMAL_LIBERATION' | 'ENVIRONMENTAL' | 'GENERAL' | 'CUSTOM';
+
+export interface SatiricalContext {
+  type: SatiricalContextType;
+  name: string;
+  description: string;
+  ethicalFramework: string;
+  keyPrinciples: string[];
+  commonTargets: string[];
+  preferredTerminology: { avoid: string; prefer: string; reason: string }[];
+  satiricalApproaches: string[];
+}
+
 export interface User {
   id: string;
   name: string;
@@ -28,6 +41,8 @@ export interface Project {
   status: ProjectStatus;
   created_by: string; // User ID
   assigned_personas: PersonaType[];
+  satirical_context?: SatiricalContext;
+  satirical_format?: SatiricalFormat;
   created_at: Date;
   updated_at?: Date;
 }
@@ -51,6 +66,7 @@ export interface NewsArticle {
 export type CreativeStrategyStatus = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'NEEDS_REVISION';
 export type SatiricalTone = 'SUBTLE' | 'OVERT' | 'ABSURDIST' | 'DRY_WIT' | 'SATIRICAL_NEWS';
 export type TargetAudience = 'GENERAL' | 'POLITICAL_SATIRE' | 'SOCIAL_COMMENTARY' | 'MILLENNIAL' | 'GEN_Z';
+export type SatiricalFormat = 'NEWS_PARODY' | 'VOX_POP' | 'MORNING_TV_INTERVIEW' | 'MOCKUMENTARY' | 'SOCIAL_MEDIA' | 'SKETCH_COMEDY' | 'SATIRICAL_ARTICLE' | 'PANEL_SHOW' | 'COMMERCIAL_PARODY' | 'REALITY_TV_PARODY';
 
 export interface SatiricalAngle {
   angle_type: 'IRONY' | 'EXAGGERATION' | 'PARODY' | 'SUBVERSION';
@@ -75,6 +91,7 @@ export interface CreativeStrategy {
   satirical_angles: SatiricalAngle[];
   target_audience: TargetAudience;
   tone: SatiricalTone;
+  satirical_format?: SatiricalFormat;
   
   // Content Framework
   key_themes: string[];
