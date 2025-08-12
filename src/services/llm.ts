@@ -100,7 +100,7 @@ export class LLMService {
       if (messages.length === 0) {
         messages.push({
           role: 'system',
-          content: this.getPersonaSystemPrompt(persona, context)
+          content: await this.getPersonaSystemPrompt(persona, context)
         });
       }
 
@@ -230,7 +230,7 @@ export class LLMService {
       if (messages.length === 0) {
         messages.push({
           role: 'system',
-          content: this.getPersonaSystemPrompt(persona, context)
+          content: await this.getPersonaSystemPrompt(persona, context)
         });
       }
 
@@ -365,6 +365,12 @@ export class LLMService {
           'ready for ai production',
           'prompt engineering finished',
           'ready for video generation'
+        ],
+        'PROJECT_DIRECTOR': [
+          'project approved',
+          'review complete',
+          'approved for next stage',
+          'ready to proceed'
         ]
       };
 
@@ -438,7 +444,8 @@ export class LLMService {
       'SATIRICAL_SCREENWRITER': 'Visual Storyboarding',
       'CINEMATIC_STORYBOARDER': 'Sound Design',
       'SOUNDSCAPE_ARCHITECT': 'Prompt Engineering',
-      'VIDEO_PROMPT_ENGINEER': 'AI Video Generation'
+      'VIDEO_PROMPT_ENGINEER': 'AI Video Generation',
+      'PROJECT_DIRECTOR': 'Project Review'
     };
 
     return workflowOrder[persona] || 'Next Stage';
@@ -797,7 +804,7 @@ export class LLMService {
   /**
    * Get system prompt for persona with enhanced context
    */
-  private getPersonaSystemPrompt(persona: PersonaType, context?: any): string {
+  private async getPersonaSystemPrompt(persona: PersonaType, context?: any): Promise<string> {
     const basePrompt = this.getPersonaDescription(persona);
     
     let systemPrompt = basePrompt;

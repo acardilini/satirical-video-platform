@@ -99,7 +99,7 @@ export class ContextManager {
         
         // Conversation memory
         conversationMemory: conversationContext?.sharedState || {},
-        recentDecisions: this.getRecentKeyDecisions(projectId, 5),
+        recentDecisions: await this.getRecentKeyDecisions(projectId, 5),
         
         // Quality context
         qualityMetrics: contextSnapshot?.qualityMetrics || this.getDefaultQualityMetrics(),
@@ -110,9 +110,9 @@ export class ContextManager {
         handoffPreparation: this.getHandoffPreparation(persona),
         
         // Memory and continuity
-        contextSummary: this.generateContextSummary(projectId, persona),
-        runningThemes: this.getRunningThemes(projectId),
-        userPreferences: this.getUserPreferences(projectId)
+        contextSummary: await this.generateContextSummary(projectId, persona),
+        runningThemes: await this.getRunningThemes(projectId),
+        userPreferences: await this.getUserPreferences(projectId)
       };
 
       // Log context creation for debugging
@@ -199,8 +199,8 @@ export class ContextManager {
   /**
    * Get conversation memory for enhanced prompts
    */
-  getConversationMemory(projectId: string): ConversationMemory {
-    const contextSnapshot = this.getLatestContextSnapshot(projectId);
+  async getConversationMemory(projectId: string): Promise<ConversationMemory> {
+    const contextSnapshot = await this.getLatestContextSnapshot(projectId);
     return contextSnapshot?.context?.sharedMemory || {
       keyDecisions: [],
       characterDescriptions: new Map(),
@@ -330,12 +330,12 @@ export class ContextManager {
     };
   }
 
-  private getRecentKeyDecisions(projectId: string, count: number): KeyDecision[] {
-    const snapshot = this.getLatestContextSnapshot(projectId);
+  private async getRecentKeyDecisions(projectId: string, count: number): Promise<KeyDecision[]> {
+    const snapshot = await this.getLatestContextSnapshot(projectId);
     if (!snapshot?.context?.sharedMemory?.keyDecisions) return [];
     
     return snapshot.context.sharedMemory.keyDecisions
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .sort((a: KeyDecision, b: KeyDecision) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, count);
   }
 
@@ -445,20 +445,20 @@ export class ContextManager {
     return handoffMap[persona];
   }
 
-  private generateContextSummary(projectId: string, persona: PersonaType): string {
-    const snapshot = this.getLatestContextSnapshot(projectId);
+  private async generateContextSummary(projectId: string, persona: PersonaType): Promise<string> {
+    const snapshot = await this.getLatestContextSnapshot(projectId);
     if (!snapshot) return 'New project starting with initial context.';
 
     return snapshot.conversationSummary || 'Project context being established.';
   }
 
-  private getRunningThemes(projectId: string): string[] {
-    const snapshot = this.getLatestContextSnapshot(projectId);
+  private async getRunningThemes(projectId: string): Promise<string[]> {
+    const snapshot = await this.getLatestContextSnapshot(projectId);
     return snapshot?.context?.sharedMemory?.runningThemes || [];
   }
 
-  private getUserPreferences(projectId: string): UserPreference[] {
-    const snapshot = this.getLatestContextSnapshot(projectId);
+  private async getUserPreferences(projectId: string): Promise<UserPreference[]> {
+    const snapshot = await this.getLatestContextSnapshot(projectId);
     return snapshot?.context?.sharedMemory?.userPreferences || [];
   }
 
@@ -602,7 +602,7 @@ export class ContextManager {
       timestamp: new Date(),
       context: {} as ProjectContext, // Would be populated with actual context
       conversationSummary: `${persona} interaction completed`,
-      characterConsistency: this.characterProfiles,
+      characterConsistency: new Map(Array.from(this.characterProfiles.entries()).map(([key, profile]) => [key, profile.name])),
       formatConstraints: [],
       qualityMetrics: this.getDefaultQualityMetrics()
     };

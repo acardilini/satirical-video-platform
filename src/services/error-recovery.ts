@@ -68,7 +68,10 @@ export type FallbackAction =
   | 'skip_optional_features'
   | 'request_user_input'
   | 'rollback_to_previous_state'
-  | 'generate_placeholder_response';
+  | 'generate_placeholder_response'
+  | 'simplified_prompt'
+  | 'context_reset'
+  | 'quality_relaxation';
 
 export type PreventionMeasure =
   | 'input_validation'
