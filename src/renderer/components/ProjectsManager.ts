@@ -290,14 +290,14 @@ This will be replaced with a proper details modal in Phase 1.2
             <button class="project-tab" data-tab="storyboard">Storyboard</button>
           </div>
 
-          <div class="tab-content active" id="director-tab">
+          <div class="tab-content" id="director-tab">
             <div class="loading-text">
               <span class="loading-spinner"></span>
               Initializing Project Director...
             </div>
           </div>
 
-          <div class="tab-content" id="overview-tab">
+          <div class="tab-content active" id="overview-tab">
             <!-- Dashboard will be loaded here -->
           </div>
 
@@ -343,11 +343,11 @@ This will be replaced with a proper details modal in Phase 1.2
         // Setup workspace event listeners
         this.setupWorkspaceEventListeners(project);
         
-        // Initialize Project Director by default (since it's the active tab)
-        this.initializeProjectDirector(projectId);
-        
-        // Initialize dashboard (for when user switches to overview tab)
+        // Initialize dashboard by default (since Overview is the active tab)
         this.initializeDashboard(projectId);
+        
+        // Initialize Project Director (for when user switches to director tab)
+        // this.initializeProjectDirector(projectId);
         
         // Load articles for this project (but don't show them initially)
         this.loadProjectArticles(projectId);
