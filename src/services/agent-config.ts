@@ -251,31 +251,44 @@ export class AgentConfigService {
     switch (provider) {
       case 'openai':
         return [
-          { value: 'gpt-4', label: 'GPT-4 (Recommended)' },
-          { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-          { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' }
+          { value: 'gpt-4o', label: 'GPT-4o (Latest & Fastest)' },
+          { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost Effective)' },
+          { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (128k context)' },
+          { value: 'gpt-4', label: 'GPT-4 (Stable)' },
+          { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (Budget)' },
+          { value: 'o1-preview', label: 'o1 Preview (Advanced Reasoning)' },
+          { value: 'o1-mini', label: 'o1 Mini (Reasoning)' }
         ];
       case 'anthropic':
         return [
-          { value: 'claude-4-20250514', label: 'Claude 4 (Latest)' },
-          { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Latest)' },
+          { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Latest & Best)' },
           { value: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet (Previous)' },
-          { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet' },
-          { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku' },
-          { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus' }
+          { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Smart)' },
+          { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Most Capable)' },
+          { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet (Balanced)' },
+          { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku (Fast & Affordable)' }
         ];
       case 'gemini':
         return [
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Recommended)' },
-          { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-          { value: 'gemini-pro', label: 'Gemini Pro' }
+          { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental - Latest)' },
+          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Most Capable)' },
+          { value: 'gemini-1.5-pro-002', label: 'Gemini 1.5 Pro 002 (Latest Stable)' },
+          { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Fast)' },
+          { value: 'gemini-1.5-flash-002', label: 'Gemini 1.5 Flash 002 (Fast & Updated)' },
+          { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Fastest)' },
+          { value: 'gemini-pro', label: 'Gemini Pro (Legacy)' }
         ];
       case 'local':
         return [
-          { value: 'llama2', label: 'Llama 2' },
-          { value: 'mistral', label: 'Mistral' },
-          { value: 'codellama', label: 'Code Llama' },
-          { value: 'neural-chat', label: 'Neural Chat' }
+          { value: 'llama3.1:70b', label: 'Llama 3.1 70B (Best Overall)' },
+          { value: 'llama3.1:8b', label: 'Llama 3.1 8B (Fast & Capable)' },
+          { value: 'llama3.2:3b', label: 'Llama 3.2 3B (Lightweight)' },
+          { value: 'qwen2.5:72b', label: 'Qwen 2.5 72B (Excellent)' },
+          { value: 'qwen2.5:32b', label: 'Qwen 2.5 32B (Strong)' },
+          { value: 'deepseek-coder-v2:16b', label: 'DeepSeek Coder V2 16B (Coding)' },
+          { value: 'mistral-nemo:12b', label: 'Mistral Nemo 12B (Balanced)' },
+          { value: 'codellama:13b', label: 'Code Llama 13B (Legacy Coding)' },
+          { value: 'phi3.5:3.8b', label: 'Phi 3.5 (Microsoft - Compact)' }
         ];
       default:
         return [];

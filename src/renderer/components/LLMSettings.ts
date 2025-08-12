@@ -178,40 +178,53 @@ export class LLMSettings {
     
     if (provider === 'openai') {
       modelSelect.innerHTML += `
-        <option value="gpt-4">GPT-4 (Recommended)</option>
-        <option value="gpt-4-turbo">GPT-4 Turbo</option>
-        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+        <option value="gpt-4o">GPT-4o (Latest & Fastest)</option>
+        <option value="gpt-4o-mini">GPT-4o Mini (Cost Effective)</option>
+        <option value="gpt-4-turbo">GPT-4 Turbo (128k context)</option>
+        <option value="gpt-4">GPT-4 (Stable)</option>
+        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Budget)</option>
+        <option value="o1-preview">o1 Preview (Advanced Reasoning)</option>
+        <option value="o1-mini">o1 Mini (Reasoning)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from OpenAI Platform';
       apiKeyLinks.innerHTML = '<a href="https://platform.openai.com/api-keys" target="_blank">Get OpenAI API Key</a>';
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'anthropic') {
       modelSelect.innerHTML += `
-        <option value="claude-4-20250514">Claude 4 (Latest)</option>
-        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Latest)</option>
+        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Latest & Best)</option>
         <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Previous)</option>
-        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended)</option>
-        <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Fast & Smart)</option>
+        <option value="claude-3-opus-20240229">Claude 3 Opus (Most Capable)</option>
+        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Balanced)</option>
+        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Fast & Affordable)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from Anthropic Console';
       apiKeyLinks.innerHTML = '<a href="https://console.anthropic.com/" target="_blank">Get Anthropic API Key</a>';
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'gemini') {
       modelSelect.innerHTML += `
-        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Recommended)</option>
-        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-        <option value="gemini-pro">Gemini Pro</option>
+        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Experimental - Latest)</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Most Capable)</option>
+        <option value="gemini-1.5-pro-002">Gemini 1.5 Pro 002 (Latest Stable)</option>
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
+        <option value="gemini-1.5-flash-002">Gemini 1.5 Flash 002 (Fast & Updated)</option>
+        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (Fastest)</option>
+        <option value="gemini-pro">Gemini Pro (Legacy)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from Google AI Studio';
       apiKeyLinks.innerHTML = '<a href="https://makersuite.google.com/app/apikey" target="_blank">Get Gemini API Key</a>';
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'local') {
       modelSelect.innerHTML += `
-        <option value="llama2">Llama 2</option>
-        <option value="mistral">Mistral</option>
-        <option value="codellama">Code Llama</option>
-        <option value="neural-chat">Neural Chat</option>
+        <option value="llama3.1:70b">Llama 3.1 70B (Best Overall)</option>
+        <option value="llama3.1:8b">Llama 3.1 8B (Fast & Capable)</option>
+        <option value="llama3.2:3b">Llama 3.2 3B (Lightweight)</option>
+        <option value="qwen2.5:72b">Qwen 2.5 72B (Excellent)</option>
+        <option value="qwen2.5:32b">Qwen 2.5 32B (Strong)</option>
+        <option value="deepseek-coder-v2:16b">DeepSeek Coder V2 16B (Coding)</option>
+        <option value="mistral-nemo:12b">Mistral Nemo 12B (Balanced)</option>
+        <option value="codellama:13b">Code Llama 13B (Legacy Coding)</option>
+        <option value="phi3.5:3.8b">Phi 3.5 (Microsoft - Compact)</option>
       `;
       apiKeyLinks.style.display = 'none';
     } else {
