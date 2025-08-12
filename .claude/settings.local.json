@@ -26,7 +26,8 @@
       "Bash(git push:*)",
       "Bash(rd:*)",
       "Bash(timeout:*)",
-      "Bash(del nul)"
+      "Bash(del nul)",
+      "WebFetch(domain:ai.google.dev)"
     ],
     "deny": []
   }

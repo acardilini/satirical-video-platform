@@ -203,12 +203,12 @@ export class LLMSettings {
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'gemini') {
       modelSelect.innerHTML += `
-        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Experimental - Latest)</option>
-        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Most Capable)</option>
-        <option value="gemini-1.5-pro-002">Gemini 1.5 Pro 002 (Latest Stable)</option>
-        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
-        <option value="gemini-1.5-flash-002">Gemini 1.5 Flash 002 (Fast & Updated)</option>
-        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (Fastest)</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro (Recommended - Best Reasoning)</option>
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Best Price/Performance)</option>
+        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Fastest & Cheapest)</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Large Context - 2M tokens)</option>
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Reliable)</option>
+        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (Budget)</option>
         <option value="gemini-pro">Gemini Pro (Legacy)</option>
       `;
       apiKeyHint.textContent = 'Get your API key from Google AI Studio';

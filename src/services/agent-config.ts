@@ -4,6 +4,7 @@
 import { PersonaType } from '../shared/types/index.js';
 import { AgentConfig } from './llm.js';
 import { ModelAvailabilityService, ModelInfo } from './model-availability.js';
+import { ModelRecommendationService } from './model-recommendations.js';
 
 export interface StoredAgentConfig {
   [key: string]: {
@@ -270,12 +271,12 @@ export class AgentConfigService {
         ];
       case 'gemini':
         return [
-          { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental - Latest)' },
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Most Capable)' },
-          { value: 'gemini-1.5-pro-002', label: 'Gemini 1.5 Pro 002 (Latest Stable)' },
-          { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Fast)' },
-          { value: 'gemini-1.5-flash-002', label: 'Gemini 1.5 Flash 002 (Fast & Updated)' },
-          { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Fastest)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Recommended - Best Reasoning)' },
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Best Price/Performance)' },
+          { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite (Fastest & Cheapest)' },
+          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Large Context - 2M tokens)' },
+          { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Reliable)' },
+          { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Budget)' },
           { value: 'gemini-pro', label: 'Gemini Pro (Legacy)' }
         ];
       case 'local':
@@ -468,5 +469,66 @@ export class AgentConfigService {
       'PROJECT_DIRECTOR': 'Project Director'
     };
     return names[persona] || persona;
+  }
+
+  /**
+   * Get intelligent model recommendation for a persona
+   */
+  public static getRecommendedModel(persona: PersonaType): { 
+    provider: string; 
+    model: string; 
+    reason: string; 
+    alternatives?: Array<{ provider: string; model: string; reason: string }> 
+  } {
+    const recommendation = ModelRecommendationService.getPersonaRecommendation(persona);
+    
+    return {
+      provider: recommendation.provider,
+      model: recommendation.model,
+      reason: recommendation.reason,
+      alternatives: recommendation.alternatives?.map(alt => ({
+        provider: alt.provider,
+        model: alt.model,
+        reason: alt.reason
+      }))
+    };
+  }
+
+  /**
+   * Get all task-specific recommendations with explanations
+   */
+  public static getTaskRecommendations(): { [taskType: string]: { provider: string; model: string; reason: string } } {
+    return {
+      'Video Prompt Engineering (Veo3)': {
+        provider: 'gemini',
+        model: 'gemini-2.5-pro',
+        reason: 'Gemini models have native integration with Veo3 through Google\'s ecosystem and understand video generation requirements best.'
+      },
+      'Creative Writing & Scripts': {
+        provider: 'anthropic',
+        model: 'claude-3-5-sonnet-20241022',
+        reason: 'Claude excels at creative writing, satirical content, and nuanced storytelling.'
+      },
+      'Complex Analysis & Strategy': {
+        provider: 'anthropic',
+        model: 'claude-3-opus-20240229',
+        reason: 'Claude 3 Opus provides the deepest reasoning capabilities for strategic thinking.'
+      },
+      'Fast Content Generation': {
+        provider: 'anthropic',
+        model: 'claude-3-5-haiku-20241022',
+        reason: 'Claude 3.5 Haiku offers the fastest response times while maintaining quality.'
+      },
+      'Multimodal Analysis': {
+        provider: 'gemini',
+        model: 'gemini-2.5-pro',
+        reason: 'Gemini excels at analyzing images, videos, and documents together.'
+      },
+      'Budget-Conscious Tasks': {
+        provider: 'gemini',
+        model: 'gemini-2.5-flash-lite',
+        reason: 'Best cost efficiency while maintaining good quality for most tasks.'
+      }
+    };
   }
 }
