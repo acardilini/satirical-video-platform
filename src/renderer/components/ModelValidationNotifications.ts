@@ -168,15 +168,16 @@ export class ModelValidationNotifications {
    * Start periodic model validation checks
    */
   private startPeriodicCheck(): void {
-    // Check every 5 minutes
-    this.checkInterval = window.setInterval(() => {
-      this.checkAllAgentModels();
-    }, 5 * 60 * 1000);
-
+    // Only do initial check on application start, no periodic checks
+    // Periodic validation every 5 minutes was causing unnecessary popups
+    
     // Initial check after a short delay
     setTimeout(() => {
       this.checkAllAgentModels();
     }, 10000);
+    
+    // Optional: Only recheck when user manually triggers it or on settings changes
+    // Remove the 5-minute interval to avoid interrupting user workflow
   }
 
   /**

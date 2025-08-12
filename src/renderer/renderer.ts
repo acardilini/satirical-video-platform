@@ -29,6 +29,7 @@ async function initializeComponents() {
     await import('./components/NewsArticleUpload.js').catch(console.error);
     await import('./components/ProjectDashboard.js').catch(console.error);
     await import('./components/CreativeStrategy.js').catch(console.error);
+    await import('./components/ProjectDirectorDashboard.js').catch(console.error);
     
     // Import settings components
     await import('./components/GlobalAPISettings.js').catch(console.error);

@@ -1,5 +1,5 @@
 // Creative Strategy Component
-// Handles creative strategy development and director's notes generation
+// Redesigned for collaborative AI workflow - form alongside chat
 
 import { 
   CreativeStrategy, 
@@ -8,7 +8,8 @@ import {
   TargetAudience, 
   SatiricalAngle, 
   CharacterArchetype,
-  PersonaType 
+  SatiricalFormat,
+  PersonaType
 } from '../../shared/types/index.js';
 import { ModernAIChatInterface } from './ModernAIChatInterface.js';
 
@@ -17,6 +18,7 @@ export class CreativeStrategyManager {
   private currentStrategy: CreativeStrategy | null = null;
   private isLoading = false;
   private modernAIChat: ModernAIChatInterface | null = null;
+  private autoSaveTimeout: NodeJS.Timeout | null = null;
 
   /**
    * Initialize Creative Strategy for a project
@@ -50,12 +52,13 @@ export class CreativeStrategyManager {
         this.currentStrategy = null;
       }
     } catch (error) {
-      console.error('Failed to load existing strategy:', error);
+      console.error('Failed to load strategy:', error);
+      this.currentStrategy = null;
     }
   }
 
   /**
-   * Render the Creative Strategy interface
+   * Main render method
    */
   private render(): void {
     const container = this.getContainer();
@@ -64,36 +67,241 @@ export class CreativeStrategyManager {
     if (this.currentStrategy) {
       this.renderExistingStrategy(container);
     } else {
-      this.renderNewStrategyForm(container);
+      this.renderNewStrategyWorkspace(container);
     }
   }
 
   /**
-   * Render existing strategy for editing
+   * Get container element
+   */
+  private getContainer(): HTMLElement | null {
+    // Try the proper container first, fallback to strategy-tab if needed
+    let container = document.getElementById('creative-strategy-content');
+    if (!container) {
+      container = document.getElementById('strategy-tab');
+    }
+    return container;
+  }
+
+  /**
+   * Render collaborative workspace for new strategy
+   */
+  private renderNewStrategyWorkspace(container: HTMLElement): void {
+    container.innerHTML = `
+      <div class="creative-strategy-workspace">
+        <!-- Header -->
+        <div class="workspace-header">
+          <h3>Creative Strategy Development</h3>
+          <p>Collaborate with AI to develop your satirical video strategy</p>
+          <div class="articles-context-indicator" id="articles-context-info">
+            <span class="loading-text">Loading article context...</span>
+          </div>
+        </div>
+
+        <!-- Main Workspace (Form + Chat Side-by-Side) -->
+        <div class="strategy-workspace-main">
+          <!-- Strategy Form Section -->
+          <div class="strategy-form-section">
+            <div class="form-header">
+              <h4>📋 Strategy Document</h4>
+              <p>Collaborate with the AI to develop your strategy. The AI will suggest specific text for each field that you can copy and paste.</p>
+            </div>
+
+            <!-- Strategy Form Fields -->
+            <div class="strategy-form">
+              <!-- Creative Concept -->
+              <div class="form-group">
+                <label for="creative-concept">Creative Concept</label>
+                <textarea id="creative-concept" placeholder="Core satirical approach (1-2 sentences)" rows="2"></textarea>
+                <small>The overarching creative direction and satirical premise</small>
+              </div>
+
+              <!-- Target Audience -->
+              <div class="form-group">
+                <label for="target-audience">Target Audience</label>
+                <textarea id="target-audience" placeholder="e.g., 'Tech-savvy millennials' or 'College-educated professionals'" rows="3"></textarea>
+                <small>Be specific about demographics, interests, and what kind of humor they appreciate</small>
+              </div>
+
+              <!-- Satirical Tone -->
+              <div class="form-group">
+                <label for="satirical-tone">Satirical Tone</label>
+                <textarea id="satirical-tone" placeholder="e.g., 'Dry wit with subtle irony' or 'Bold absurdist humor'" rows="3"></textarea>
+                <small>How should the humor feel? Examples: dry wit, absurdist, cynical, deadpan, sarcastic</small>
+              </div>
+
+
+              <!-- Key Themes -->
+              <div class="form-group">
+                <label for="key-themes">Key Themes</label>
+                <div class="themes-input-section">
+                  <input type="text" id="theme-input" placeholder="Enter a theme (e.g., Media Bias, Corporate Culture)">
+                  <button type="button" id="add-theme-btn" class="btn-small">Add Theme</button>
+                </div>
+                <div id="themes-list" class="themes-display">
+                  <!-- Themes will be added dynamically -->
+                </div>
+                <small>Add 3-5 main topics or issues to satirize</small>
+              </div>
+
+              <!-- Character Archetypes -->
+              <div class="form-group">
+                <label>Character Archetypes</label>
+                <div id="character-archetypes-section">
+                  <button type="button" id="add-character-btn" class="btn-outline">+ Add Character Archetype</button>
+                  <div id="characters-list">
+                    <!-- Character archetypes will be added dynamically -->
+                  </div>
+                </div>
+                <small>Define personality types (not specific characters)</small>
+              </div>
+
+              <!-- Visual Style Guide -->
+              <div class="form-group">
+                <label>Visual Style Guide</label>
+                <div class="visual-style-inputs">
+                  <div class="style-input-group">
+                    <label for="overall-aesthetic">Overall Aesthetic</label>
+                    <textarea id="overall-aesthetic" placeholder="e.g., Clean minimalist, Retro 80s, Documentary style" rows="2"></textarea>
+                  </div>
+                  <div class="style-input-group">
+                    <label for="color-palette">Color Palette</label>
+                    <textarea id="color-palette" placeholder="e.g., Muted earth tones, High contrast B&W, Neon accents" rows="2"></textarea>
+                  </div>
+                  <div class="style-input-group">
+                    <label for="cinematography-notes">Cinematography Notes</label>
+                    <textarea id="cinematography-notes" placeholder="Camera style, lighting approach, shot preferences" rows="2"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button type="button" id="save-strategy-btn" class="btn btn-primary">Save Strategy</button>
+                <button type="button" id="clear-form-btn" class="btn btn-outline">Clear Form</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Chat Section -->
+          <div class="ai-chat-section">
+            <div class="chat-header">
+              <h4>💬 Creative Strategist AI</h4>
+              <p>Collaborate to develop your strategy</p>
+              <div class="chat-actions">
+                <button type="button" id="start-ai-chat-btn" class="btn btn-primary chat-start-btn">
+                  Start Collaboration
+                </button>
+                <button class="btn btn-outline" id="generate-ai-strategy-btn">
+                  🚀 Quick Generation
+                </button>
+              </div>
+            </div>
+            
+            <!-- Chat Interface Container -->
+            <div id="ai-chat-container" class="chat-container">
+              <div class="chat-placeholder">
+                <div class="placeholder-icon">🤖</div>
+                <p>Click "Start Collaboration" to begin working with the Creative Strategist AI.</p>
+                <p class="placeholder-hint">The AI will help you develop each part of your Creative Strategy through focused questions and suggestions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Collaboration Tips (Bottom of Page) -->
+        <div class="strategy-tips-bottom">
+          <h6>💡 AI Collaboration Tips</h6>
+          <div class="tips-grid">
+            <span><strong>Start Chat:</strong> Click "Start Collaboration" for guided questions</span>
+            <span><strong>Be Specific:</strong> Share your vision clearly for better suggestions</span>
+            <span><strong>Ask for Text:</strong> Request specific content for form fields</span>
+            <span><strong>Copy & Paste:</strong> Use AI suggestions directly in the form</span>
+            <span><strong>Iterate:</strong> Ask follow-ups for refinements</span>
+            <span><strong>Quick Start:</strong> Try "🚀 Quick Generation" for auto-complete</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.setupNewStrategyListeners();
+    this.updateArticlesContextIndicator();
+  }
+
+  /**
+   * Update articles context indicator
+   */
+  private async updateArticlesContextIndicator(): Promise<void> {
+    try {
+      const contextIndicator = document.getElementById('articles-context-info');
+      if (!contextIndicator) return;
+
+      const context = await this.getCurrentProjectContext();
+      const articles = context.articles || [];
+      
+      if (articles.length === 0) {
+        contextIndicator.innerHTML = `
+          <div class="no-articles-warning">
+            <span class="warning-icon">⚠️</span>
+            <span>No news articles found. Upload articles first for better AI strategy development.</span>
+          </div>
+        `;
+      } else {
+        contextIndicator.innerHTML = `
+          <div class="articles-available">
+            <span class="success-icon">📰</span>
+            <span><strong>${articles.length} news articles</strong> loaded and ready for AI analysis</span>
+            <details style="margin-top: 0.5rem;">
+              <summary style="cursor: pointer; color: #666;">View articles</summary>
+              <div class="articles-list" style="margin-top: 0.5rem; padding: 0.5rem; background: #f8f9fa; border-radius: 4px; font-size: 0.9rem;">
+                ${articles.map((article: any, index: number) => `
+                  <div style="margin-bottom: 0.5rem;">
+                    <strong>${index + 1}. ${this.escapeHtml(article.title)}</strong><br>
+                    <span style="color: #666; font-size: 0.8rem;">Source: ${this.escapeHtml(article.source || 'Unknown')}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </details>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Failed to update articles context indicator:', error);
+      const contextIndicator = document.getElementById('articles-context-info');
+      if (contextIndicator) {
+        contextIndicator.innerHTML = `
+          <div class="articles-error">
+            <span class="error-icon">❌</span>
+            <span>Could not load article context</span>
+          </div>
+        `;
+      }
+    }
+  }
+
+  /**
+   * Render existing strategy view  
    */
   private renderExistingStrategy(container: HTMLElement): void {
-    const strategy = this.currentStrategy!;
-    const statusClass = strategy.status.toLowerCase().replace('_', '-');
+    if (!this.currentStrategy) return;
 
+    const strategy = this.currentStrategy;
+    
     container.innerHTML = `
-      <div class="creative-strategy">
-        <!-- Strategy Header -->
+      <div class="existing-strategy">
         <div class="strategy-header">
-          <div class="strategy-meta">
+          <div class="strategy-info">
             <h3>Creative Strategy</h3>
-            <span class="strategy-status ${statusClass}">${this.formatStatus(strategy.status)}</span>
-            <span class="strategy-version">v${strategy.version}</span>
+            <div class="strategy-metadata">
+              <span class="status-badge ${strategy.status.toLowerCase()}">${this.formatStatus(strategy.status)}</span>
+              <span class="created-date">Created: ${new Date(strategy.created_at).toLocaleDateString()}</span>
+            </div>
           </div>
+          
           <div class="strategy-actions">
-            <button class="btn btn-outline" id="refine-with-chat-btn">
-              💬 Refine with AI Chat
-            </button>
-            <button class="btn btn-outline" id="edit-strategy-btn">
-              ✏️ Edit Strategy
-            </button>
-            <button class="btn btn-primary" id="generate-director-notes-btn">
-              🎬 Generate Director's Notes
-            </button>
+            <button class="btn btn-outline" id="edit-strategy-btn">Edit Strategy</button>
+            <button class="btn btn-primary" id="refine-with-chat-btn">💬 Refine with AI</button>
+            <button class="btn btn-success" id="generate-director-notes-btn">Generate Director's Notes</button>
           </div>
         </div>
 
@@ -127,14 +335,6 @@ export class CreativeStrategyManager {
           </div>
         </div>
 
-        <!-- Satirical Angles -->
-        <div class="strategy-section">
-          <h4>Satirical Angles</h4>
-          <div class="angles-list">
-            ${strategy.satirical_angles.map(angle => this.renderSatiricalAngle(angle)).join('')}
-          </div>
-        </div>
-
         <!-- Character Archetypes -->
         <div class="strategy-section">
           <h4>Character Archetypes</h4>
@@ -164,14 +364,6 @@ export class CreativeStrategyManager {
             ` : ''}
           </div>
         </div>
-
-        <!-- Validation Status -->
-        <div class="strategy-section">
-          <h4>Validation Criteria</h4>
-          <div class="validation-grid">
-            ${this.renderValidationCriteria(strategy.validation_criteria)}
-          </div>
-        </div>
       </div>
     `;
 
@@ -179,210 +371,45 @@ export class CreativeStrategyManager {
   }
 
   /**
-   * Render new strategy creation form
+   * Setup event listeners for new collaborative workspace
    */
-  private renderNewStrategyForm(container: HTMLElement): void {
-    container.innerHTML = `
-      <div class="creative-strategy-form">
-        <!-- Header -->
-        <div class="form-header">
-          <h3>Create Creative Strategy</h3>
-          <p>Develop the creative direction for this satirical video project</p>
-        </div>
+  private setupNewStrategyListeners(): void {
+    // Chat initialization
+    const startChatBtn = document.getElementById('start-ai-chat-btn');
+    const generateAIBtn = document.getElementById('generate-ai-strategy-btn');
+    
+    startChatBtn?.addEventListener('click', () => this.startCollaborativeChat());
+    generateAIBtn?.addEventListener('click', () => this.generateAIStrategy());
 
-        <!-- AI Collaboration Option -->
-        <div class="ai-generation-section">
-          <h4>🤖 AI-Powered Strategy Development</h4>
-          <p>Collaborate with the Creative Strategist persona to develop your strategy through interactive discussion.</p>
-          <div class="collaboration-options">
-            <button class="btn btn-primary" id="start-ai-chat-btn">
-              💬 Start Collaborative Chat
-            </button>
-            <button class="btn btn-outline" id="generate-ai-strategy-btn">
-              🚀 Quick AI Generation
-            </button>
-          </div>
-          <div class="divider">
-            <span>or</span>
-          </div>
-        </div>
+    // Form interactions
+    const saveBtn = document.getElementById('save-strategy-btn');
+    const clearBtn = document.getElementById('clear-form-btn');
+    
+    saveBtn?.addEventListener('click', () => this.saveStrategy());
+    clearBtn?.addEventListener('click', () => this.clearForm());
 
-        <!-- Manual Creation Form -->
-        <form id="creative-strategy-form" class="strategy-form">
-          <div class="form-group">
-            <label for="creative-concept">Creative Concept *</label>
-            <textarea id="creative-concept" name="creative_concept" rows="4" maxlength="1000" 
-                      placeholder="Describe the core satirical concept and approach for this project..." required></textarea>
-            <small class="form-hint">What's the main satirical idea driving this video?</small>
-          </div>
+    // Dynamic theme management
+    const addThemeBtn = document.getElementById('add-theme-btn');
+    const themeInput = document.getElementById('theme-input') as HTMLInputElement;
+    
+    addThemeBtn?.addEventListener('click', () => this.addTheme());
+    themeInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.addTheme();
+      }
+    });
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="target-audience">Target Audience *</label>
-              <select id="target-audience" name="target_audience" required>
-                <option value="">Select audience...</option>
-                <option value="GENERAL">General Audience</option>
-                <option value="POLITICAL_SATIRE">Political Satire Fans</option>
-                <option value="SOCIAL_COMMENTARY">Social Commentary</option>
-                <option value="MILLENNIAL">Millennial</option>
-                <option value="GEN_Z">Gen Z</option>
-              </select>
-            </div>
+    // Character archetype management
+    const addCharacterBtn = document.getElementById('add-character-btn');
+    addCharacterBtn?.addEventListener('click', () => this.addCharacterArchetype());
 
-            <div class="form-group">
-              <label for="satirical-tone">Satirical Tone *</label>
-              <select id="satirical-tone" name="satirical_tone" required>
-                <option value="">Select tone...</option>
-                <option value="SUBTLE">Subtle</option>
-                <option value="OVERT">Overt</option>
-                <option value="ABSURDIST">Absurdist</option>
-                <option value="DRY_WIT">Dry Wit</option>
-                <option value="SATIRICAL_NEWS">Satirical News</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Key Themes -->
-          <div class="form-group">
-            <label>Key Themes</label>
-            <div class="dynamic-list" id="themes-list">
-              <div class="list-item">
-                <input type="text" placeholder="Enter a key theme..." maxlength="100">
-                <button type="button" class="btn-remove">×</button>
-              </div>
-            </div>
-            <button type="button" class="btn btn-outline btn-add-item" data-target="themes-list">
-              + Add Theme
-            </button>
-          </div>
-
-          <!-- Satirical Angles -->
-          <div class="form-group">
-            <label>Satirical Angles</label>
-            <div id="angles-container">
-              <!-- Angles will be added dynamically -->
-            </div>
-            <button type="button" class="btn btn-outline" id="add-angle-btn">
-              + Add Satirical Angle
-            </button>
-          </div>
-
-          <!-- Character Archetypes -->
-          <div class="form-group">
-            <label>Character Archetypes</label>
-            <div id="characters-container">
-              <!-- Characters will be added dynamically -->
-            </div>
-            <button type="button" class="btn btn-outline" id="add-character-btn">
-              + Add Character
-            </button>
-          </div>
-
-          <!-- Visual Style Guide -->
-          <div class="form-group">
-            <label>Visual Style Guide</label>
-            <div class="visual-style-inputs">
-              <div class="form-group">
-                <label for="color-palette">Color Palette</label>
-                <input type="text" id="color-palette" name="color_palette" maxlength="200" 
-                       placeholder="e.g., Muted earth tones with bold red accents">
-              </div>
-              
-              <div class="form-group">
-                <label for="cinematography-notes">Cinematography Notes</label>
-                <textarea id="cinematography-notes" name="cinematography_notes" rows="2" maxlength="500" 
-                          placeholder="Camera angles, lighting preferences, shot composition..."></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label for="overall-aesthetic">Overall Aesthetic</label>
-                <input type="text" id="overall-aesthetic" name="overall_aesthetic" maxlength="200" 
-                       placeholder="e.g., Mock documentary style, retro news broadcast">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" id="cancel-strategy-btn">
-              Cancel
-            </button>
-            <button type="submit" class="btn btn-primary">
-              Create Creative Strategy
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
-
-    this.setupFormListeners();
+    // Auto-save form data as user types
+    this.setupAutoSave();
   }
 
   /**
-   * Render satirical angle item
-   */
-  private renderSatiricalAngle(angle: SatiricalAngle): string {
-    return `
-      <div class="angle-item">
-        <div class="angle-header">
-          <span class="angle-type">${angle.angle_type}</span>
-        </div>
-        <div class="angle-description">
-          ${this.escapeHtml(angle.description)}
-        </div>
-        <div class="angle-elements">
-          ${angle.key_elements.map(element => 
-            `<span class="element-tag">${this.escapeHtml(element)}</span>`
-          ).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render character archetype
-   */
-  private renderCharacterArchetype(character: CharacterArchetype): string {
-    return `
-      <div class="character-card">
-        <h5 class="character-name">${this.escapeHtml(character.name)}</h5>
-        <div class="character-role">${this.escapeHtml(character.role)}</div>
-        <div class="character-traits">
-          ${character.satirical_traits.map(trait => 
-            `<span class="trait-tag">${this.escapeHtml(trait)}</span>`
-          ).join('')}
-        </div>
-        ${character.visual_description ? `
-          <div class="character-visual">
-            <strong>Visual:</strong> ${this.escapeHtml(character.visual_description)}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  /**
-   * Render validation criteria
-   */
-  private renderValidationCriteria(criteria: any): string {
-    const criteriaItems = [
-      { key: 'theme_consistency', label: 'Theme Consistency', value: criteria.theme_consistency },
-      { key: 'character_coherence', label: 'Character Coherence', value: criteria.character_coherence },
-      { key: 'satirical_effectiveness', label: 'Satirical Effectiveness', value: criteria.satirical_effectiveness },
-      { key: 'technical_feasibility', label: 'Technical Feasibility', value: criteria.technical_feasibility }
-    ];
-
-    return criteriaItems.map(item => `
-      <div class="validation-item">
-        <div class="validation-label">${item.label}</div>
-        <div class="validation-status ${item.value ? 'valid' : 'invalid'}">
-          ${item.value ? '✅' : '❌'}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  /**
-   * Setup event listeners for existing strategy
+   * Setup event listeners for existing strategy view
    */
   private setupExistingStrategyListeners(): void {
     const refineWithChatBtn = document.getElementById('refine-with-chat-btn');
@@ -395,669 +422,532 @@ export class CreativeStrategyManager {
   }
 
   /**
-   * Setup event listeners for form
+   * Start collaborative chat with Creative Strategist AI
    */
-  private setupFormListeners(): void {
-    const form = document.getElementById('creative-strategy-form');
-    const generateAIBtn = document.getElementById('generate-ai-strategy-btn');
-    const startChatBtn = document.getElementById('start-ai-chat-btn');
-    const cancelBtn = document.getElementById('cancel-strategy-btn');
-    const addAngleBtn = document.getElementById('add-angle-btn');
-    const addCharacterBtn = document.getElementById('add-character-btn');
+  private async startCollaborativeChat(): Promise<void> {
+    try {
+      const chatContainer = document.getElementById('ai-chat-container');
+      if (!chatContainer) return;
 
-    form?.addEventListener('submit', (e) => this.handleFormSubmit(e));
-    generateAIBtn?.addEventListener('click', () => this.generateAIStrategy());
-    startChatBtn?.addEventListener('click', () => this.startCollaborativeChat());
-    cancelBtn?.addEventListener('click', () => this.cancel());
-    addAngleBtn?.addEventListener('click', () => this.addAngleInput());
-    addCharacterBtn?.addEventListener('click', () => this.addCharacterInput());
+      // Initialize modern AI chat interface within the chat container
+      this.modernAIChat = new ModernAIChatInterface('ai-chat-container');
+      
+      // Gather current project context
+      const projectContext = await this.getCurrentProjectContext();
+      
+      // Initialize with Creative Strategist persona
+      await this.modernAIChat.initialize('CREATIVE_STRATEGIST', projectContext);
+      
+      // Update button state
+      const startBtn = document.getElementById('start-ai-chat-btn') as HTMLButtonElement;
+      if (startBtn) {
+        startBtn.textContent = '💬 Chat Active';
+        startBtn.disabled = true;
+        startBtn.className = 'btn btn-success chat-start-btn';
+      }
 
-    // Dynamic list handlers
-    this.setupDynamicListHandlers();
+    } catch (error) {
+      console.error('Failed to start collaborative chat:', error);
+      alert('Failed to start AI collaboration. Please check your AI agent configuration.');
+    }
   }
 
   /**
-   * Setup dynamic list input handlers
+   * Get current project context for AI chat
    */
-  private setupDynamicListHandlers(): void {
-    const addBtns = document.querySelectorAll('.btn-add-item');
-    addBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = (e.target as HTMLElement).getAttribute('data-target');
-        if (target) this.addListItem(target);
+  private async getCurrentProjectContext(): Promise<any> {
+    if (!this.currentProjectId) return {};
+
+    try {
+      // @ts-ignore
+      const projectResult = await window.electronAPI.database.getProjectById(this.currentProjectId);
+      // @ts-ignore 
+      const articlesResult = await window.electronAPI.database.getNewsArticlesByProject(this.currentProjectId);
+
+      const articles = articlesResult.success ? articlesResult.data : [];
+      
+      return {
+        projectId: this.currentProjectId,
+        project: projectResult.success ? projectResult.data : null,
+        articles: articles,
+        formData: this.getCurrentFormData(),
+        instructions: `Help the user develop their Creative Strategy based on the ${articles.length} news articles provided. Analyze the articles to identify satirical opportunities and suggest specific strategic elements. Ask focused questions about each section and suggest content for the form fields. Base all recommendations on the actual article content.`
+      };
+    } catch (error) {
+      console.error('Failed to get project context:', error);
+      return { 
+        projectId: this.currentProjectId,
+        articles: [],
+        instructions: "Help the user develop their Creative Strategy by asking focused questions about each section. Note: Could not load project articles - ask user to provide context about news articles they want to satirize."
+      };
+    }
+  }
+
+  /**
+   * Get current form data
+   */
+  private getCurrentFormData(): any {
+    const formData = {
+      creative_concept: (document.getElementById('creative-concept') as HTMLTextAreaElement)?.value || '',
+      target_audience: (document.getElementById('target-audience') as HTMLTextAreaElement)?.value || '',
+      satirical_tone: (document.getElementById('satirical-tone') as HTMLTextAreaElement)?.value || '',
+      key_themes: this.getThemesList(),
+      character_archetypes: this.getCharactersList(),
+      visual_style_guide: {
+        overall_aesthetic: (document.getElementById('overall-aesthetic') as HTMLTextAreaElement)?.value || '',
+        color_palette: (document.getElementById('color-palette') as HTMLTextAreaElement)?.value || '',
+        cinematography_notes: (document.getElementById('cinematography-notes') as HTMLTextAreaElement)?.value || ''
+      }
+    };
+
+    return formData;
+  }
+
+  /**
+   * Transform form data to match CreativeStrategy interface
+   */
+  private transformFormDataForSave(formData: any): any {
+    return {
+      ...formData,
+      // Convert string inputs to proper enum values for database
+      target_audience: this.mapAudienceToEnum(formData.target_audience),
+      tone: this.mapToneToEnum(formData.satirical_tone),
+      // Add required satirical_angles field
+      satirical_angles: this.generateSatiricalAngles(formData)
+    };
+  }
+
+  /**
+   * Map audience text to enum value
+   */
+  private mapAudienceToEnum(audienceText: string): string {
+    const lowerText = audienceText.toLowerCase();
+    if (lowerText.includes('political') || lowerText.includes('policy')) return 'POLITICAL_SATIRE';
+    if (lowerText.includes('social') || lowerText.includes('society')) return 'SOCIAL_COMMENTARY';
+    if (lowerText.includes('millennial')) return 'MILLENNIAL';
+    if (lowerText.includes('gen z') || lowerText.includes('young')) return 'GEN_Z';
+    return 'GENERAL';
+  }
+
+  /**
+   * Map tone text to enum value
+   */
+  private mapToneToEnum(toneText: string): string {
+    const lowerText = toneText.toLowerCase();
+    if (lowerText.includes('subtle')) return 'SUBTLE';
+    if (lowerText.includes('overt') || lowerText.includes('obvious')) return 'OVERT';
+    if (lowerText.includes('absurd') || lowerText.includes('ridiculous')) return 'ABSURDIST';
+    if (lowerText.includes('dry') || lowerText.includes('wit')) return 'DRY_WIT';
+    if (lowerText.includes('news') || lowerText.includes('broadcast')) return 'SATIRICAL_NEWS';
+    return 'DRY_WIT'; // Default
+  }
+
+  /**
+   * Generate satirical angles based on form data
+   */
+  private generateSatiricalAngles(formData: any): any[] {
+    const angles = [];
+    
+    if (formData.creative_concept.toLowerCase().includes('exaggerat')) {
+      angles.push({
+        angle_type: 'EXAGGERATION',
+        description: 'Amplify absurd elements in the source material',
+        key_elements: ['Dramatic presentation', 'Over-the-top reactions']
+      });
+    }
+    
+    if (formData.satirical_tone.toLowerCase().includes('parody')) {
+      angles.push({
+        angle_type: 'PARODY',
+        description: 'Mock existing formats or styles',
+        key_elements: ['Format mimicry', 'Style imitation']
+      });
+    }
+    
+    // Default satirical angle if none detected
+    if (angles.length === 0) {
+      angles.push({
+        angle_type: 'IRONY',
+        description: 'Use ironic commentary on current events',
+        key_elements: ['Contradictory statements', 'Unexpected perspectives']
+      });
+    }
+    
+    return angles;
+  }
+
+  /**
+   * Add theme to the themes list
+   */
+  private addTheme(): void {
+    const themeInput = document.getElementById('theme-input') as HTMLInputElement;
+    const themesList = document.getElementById('themes-list');
+    
+    if (!themeInput || !themesList || !themeInput.value.trim()) return;
+
+    const theme = themeInput.value.trim();
+    
+    // Create theme element
+    const themeElement = document.createElement('div');
+    themeElement.className = 'theme-tag';
+    themeElement.innerHTML = `
+      <span class="theme-text">${this.escapeHtml(theme)}</span>
+      <button type="button" class="theme-remove-btn">×</button>
+    `;
+
+    // Add remove handler
+    const removeBtn = themeElement.querySelector('.theme-remove-btn');
+    removeBtn?.addEventListener('click', () => themeElement.remove());
+
+    themesList.appendChild(themeElement);
+    themeInput.value = '';
+  }
+
+  /**
+   * Get themes list from DOM
+   */
+  private getThemesList(): string[] {
+    const themesList = document.getElementById('themes-list');
+    if (!themesList) return [];
+
+    const themes: string[] = [];
+    themesList.querySelectorAll('.theme-text').forEach(el => {
+      themes.push(el.textContent?.trim() || '');
+    });
+
+    return themes.filter(theme => theme.length > 0);
+  }
+
+  /**
+   * Add character archetype
+   */
+  private addCharacterArchetype(): void {
+    const charactersList = document.getElementById('characters-list');
+    if (!charactersList) return;
+
+    const characterElement = document.createElement('div');
+    characterElement.className = 'character-archetype-input';
+    characterElement.innerHTML = `
+      <div class="character-inputs">
+        <input type="text" class="character-archetype-name" placeholder="Archetype name (e.g., The Oblivious Expert)" required>
+        <textarea class="character-archetype-description" placeholder="Brief personality description" rows="2"></textarea>
+        <button type="button" class="character-remove-btn">Remove</button>
+      </div>
+    `;
+
+    // Add remove handler
+    const removeBtn = characterElement.querySelector('.character-remove-btn');
+    removeBtn?.addEventListener('click', () => characterElement.remove());
+
+    charactersList.appendChild(characterElement);
+  }
+
+  /**
+   * Get characters list from DOM  
+   */
+  private getCharactersList(): any[] {
+    const charactersList = document.getElementById('characters-list');
+    if (!charactersList) return [];
+
+    const characters: any[] = [];
+    charactersList.querySelectorAll('.character-archetype-input').forEach(el => {
+      const nameEl = el.querySelector('.character-archetype-name') as HTMLInputElement;
+      const descEl = el.querySelector('.character-archetype-description') as HTMLTextAreaElement;
+      
+      if (nameEl?.value.trim()) {
+        characters.push({
+          name: nameEl.value.trim(),
+          role: 'Supporting character',
+          satirical_traits: descEl?.value.trim() ? descEl.value.trim().split(',').map(t => t.trim()) : [],
+          visual_description: ''
+        });
+      }
+    });
+
+    return characters;
+  }
+
+  /**
+   * Setup auto-save functionality
+   */
+  private setupAutoSave(): void {
+    const autoSaveElements = [
+      'creative-concept',
+      'target-audience', 
+      'satirical-tone',
+      'overall-aesthetic',
+      'color-palette',
+      'cinematography-notes'
+    ];
+
+    autoSaveElements.forEach(id => {
+      const element = document.getElementById(id);
+      element?.addEventListener('input', () => {
+        if (this.autoSaveTimeout) clearTimeout(this.autoSaveTimeout);
+        this.autoSaveTimeout = setTimeout(() => {
+          this.autoSaveFormData();
+        }, 2000);
       });
     });
   }
 
+
+
+
+
+
+
   /**
-   * Add dynamic list item
+   * Auto-save current form data
    */
-  private addListItem(containerId: string): void {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+  private autoSaveFormData(): void {
+    const formData = this.getCurrentFormData();
+    localStorage.setItem(`creative-strategy-draft-${this.currentProjectId}`, JSON.stringify(formData));
+    console.log('Auto-saved Creative Strategy draft');
+  }
 
-    const newItem = document.createElement('div');
-    newItem.className = 'list-item';
-    newItem.innerHTML = `
-      <input type="text" placeholder="Enter a key theme..." maxlength="100">
-      <button type="button" class="btn-remove">×</button>
-    `;
-
-    container.appendChild(newItem);
-
-    // Add remove handler
-    const removeBtn = newItem.querySelector('.btn-remove');
-    removeBtn?.addEventListener('click', () => {
-      if (container.children.length > 1) {
-        newItem.remove();
+  /**
+   * Save strategy to database
+   */
+  private async saveStrategy(): Promise<void> {
+    try {
+      const formData = this.getCurrentFormData();
+      
+      // Validate required fields
+      if (!formData.creative_concept.trim()) {
+        alert('Creative Concept is required');
+        return;
       }
-    });
-  }
 
-  /**
-   * Add satirical angle input
-   */
-  private addAngleInput(): void {
-    const container = document.getElementById('angles-container');
-    if (!container) return;
-
-    const angleDiv = document.createElement('div');
-    angleDiv.className = 'angle-input-group';
-    angleDiv.innerHTML = `
-      <div class="angle-input">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Angle Type</label>
-            <select name="angle_type" required>
-              <option value="">Select type...</option>
-              <option value="IRONY">Irony</option>
-              <option value="EXAGGERATION">Exaggeration</option>
-              <option value="PARODY">Parody</option>
-              <option value="SUBVERSION">Subversion</option>
-            </select>
-          </div>
-          <div class="form-group angle-remove">
-            <button type="button" class="btn btn-danger btn-remove-angle">×</button>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label>Description</label>
-          <textarea name="angle_description" rows="2" maxlength="300" 
-                    placeholder="Describe this satirical angle..." required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label>Key Elements</label>
-          <div class="angle-elements-list">
-            <div class="list-item">
-              <input type="text" name="angle_element" placeholder="Enter key element..." maxlength="100">
-              <button type="button" class="btn-remove">×</button>
-            </div>
-          </div>
-          <button type="button" class="btn btn-outline btn-add-element">+ Add Element</button>
-        </div>
-      </div>
-    `;
-
-    container.appendChild(angleDiv);
-
-    // Setup remove handlers
-    const removeBtn = angleDiv.querySelector('.btn-remove-angle');
-    removeBtn?.addEventListener('click', () => angleDiv.remove());
-
-    const addElementBtn = angleDiv.querySelector('.btn-add-element');
-    addElementBtn?.addEventListener('click', () => {
-      const elementsList = angleDiv.querySelector('.angle-elements-list');
-      if (elementsList) this.addAngleElement(elementsList);
-    });
-  }
-
-  /**
-   * Add character archetype input
-   */
-  private addCharacterInput(): void {
-    const container = document.getElementById('characters-container');
-    if (!container) return;
-
-    const characterDiv = document.createElement('div');
-    characterDiv.className = 'character-input-group';
-    characterDiv.innerHTML = `
-      <div class="character-input">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Character Name</label>
-            <input type="text" name="character_name" maxlength="100" 
-                   placeholder="Character name..." required>
-          </div>
-          <div class="form-group">
-            <label>Role</label>
-            <input type="text" name="character_role" maxlength="100" 
-                   placeholder="Character role..." required>
-          </div>
-          <div class="form-group character-remove">
-            <button type="button" class="btn btn-danger btn-remove-character">×</button>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label>Visual Description</label>
-          <input type="text" name="character_visual" maxlength="200" 
-                 placeholder="Physical appearance, style...">
-        </div>
-        
-        <div class="form-group">
-          <label>Satirical Traits</label>
-          <div class="character-traits-list">
-            <div class="list-item">
-              <input type="text" name="character_trait" placeholder="Enter satirical trait..." maxlength="100">
-              <button type="button" class="btn-remove">×</button>
-            </div>
-          </div>
-          <button type="button" class="btn btn-outline btn-add-trait">+ Add Trait</button>
-        </div>
-      </div>
-    `;
-
-    container.appendChild(characterDiv);
-
-    // Setup remove handlers
-    const removeBtn = characterDiv.querySelector('.btn-remove-character');
-    removeBtn?.addEventListener('click', () => characterDiv.remove());
-
-    const addTraitBtn = characterDiv.querySelector('.btn-add-trait');
-    addTraitBtn?.addEventListener('click', () => {
-      const traitsList = characterDiv.querySelector('.character-traits-list');
-      if (traitsList) this.addCharacterTrait(traitsList);
-    });
-  }
-
-  /**
-   * Add angle element
-   */
-  private addAngleElement(container: Element): void {
-    const newElement = document.createElement('div');
-    newElement.className = 'list-item';
-    newElement.innerHTML = `
-      <input type="text" name="angle_element" placeholder="Enter key element..." maxlength="100">
-      <button type="button" class="btn-remove">×</button>
-    `;
-
-    container.appendChild(newElement);
-
-    const removeBtn = newElement.querySelector('.btn-remove');
-    removeBtn?.addEventListener('click', () => {
-      if (container.children.length > 1) {
-        newElement.remove();
+      if (!formData.target_audience.trim()) {
+        alert('Target Audience is required');
+        return;
       }
-    });
+
+      if (!formData.satirical_tone.trim()) {
+        alert('Satirical Tone is required');
+        return;
+      }
+
+      this.isLoading = true;
+      
+      // Transform form data to match database schema
+      const transformedData = this.transformFormDataForSave(formData);
+      
+      // @ts-ignore
+      const result = await window.electronAPI.database.createCreativeStrategy({
+        project_id: this.currentProjectId,
+        ...transformedData,
+        status: 'DRAFT',
+        created_by: 'temp-user-id' // TODO: Get actual user ID from auth
+      });
+
+      if (result.success) {
+        this.currentStrategy = result.data;
+        alert('Creative Strategy saved successfully!');
+        
+        // Clear auto-save data
+        localStorage.removeItem(`creative-strategy-draft-${this.currentProjectId}`);
+        
+        // Re-render to show saved strategy
+        this.render();
+      } else {
+        throw new Error(result.error || 'Failed to save strategy');
+      }
+
+    } catch (error) {
+      console.error('Failed to save strategy:', error);
+      alert('Failed to save Creative Strategy. Please try again.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   /**
-   * Add character trait
+   * Clear form data
    */
-  private addCharacterTrait(container: Element): void {
-    const newTrait = document.createElement('div');
-    newTrait.className = 'list-item';
-    newTrait.innerHTML = `
-      <input type="text" name="character_trait" placeholder="Enter satirical trait..." maxlength="100">
-      <button type="button" class="btn-remove">×</button>
-    `;
+  private clearForm(): void {
+    if (confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
+      // Clear all form fields
+      (document.getElementById('creative-concept') as HTMLTextAreaElement).value = '';
+      (document.getElementById('target-audience') as HTMLTextAreaElement).value = '';
+      (document.getElementById('satirical-tone') as HTMLTextAreaElement).value = '';
+      (document.getElementById('overall-aesthetic') as HTMLTextAreaElement).value = '';
+      (document.getElementById('color-palette') as HTMLTextAreaElement).value = '';
+      (document.getElementById('cinematography-notes') as HTMLTextAreaElement).value = '';
 
-    container.appendChild(newTrait);
+      // Clear themes
+      const themesList = document.getElementById('themes-list');
+      if (themesList) themesList.innerHTML = '';
 
-    const removeBtn = newTrait.querySelector('.btn-remove');
-    removeBtn?.addEventListener('click', () => {
-      if (container.children.length > 1) {
-        newTrait.remove();
+      // Clear characters
+      const charactersList = document.getElementById('characters-list');
+      if (charactersList) charactersList.innerHTML = '';
+
+      // Clear auto-save data
+      localStorage.removeItem(`creative-strategy-draft-${this.currentProjectId}`);
+    }
+  }
+
+  /**
+   * Generate AI strategy (quick generation without chat)
+   */
+  private async generateAIStrategy(): Promise<void> {
+    try {
+      this.isLoading = true;
+      
+      // @ts-ignore
+      const result = await window.electronAPI.database.generateCreativeStrategy(this.currentProjectId);
+      
+      if (result.success) {
+        this.currentStrategy = result.data;
+        this.render();
+      } else {
+        throw new Error(result.error || 'Failed to generate strategy');
       }
-    });
+
+    } catch (error) {
+      console.error('Failed to generate AI strategy:', error);
+      alert('Failed to generate strategy. Please try the collaborative chat instead.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   /**
    * Refine existing strategy with AI chat
    */
   private async refineWithChat(): Promise<void> {
-    if (!this.currentProjectId || !this.currentStrategy) return;
-
     try {
-      const container = this.getContainer();
-      if (!container) return;
-
-      // Create split-screen layout: strategy on left, chat on right
-      container.innerHTML = `
-        <div class="strategy-refinement-layout">
-          <!-- Strategy Review Panel -->
-          <div class="strategy-review-panel">
-            <div class="strategy-review-header">
-              <h3>📋 Current Strategy</h3>
-              <button class="btn btn-outline btn-sm" id="close-refinement-btn">✕ Close Chat</button>
-            </div>
-            <div class="strategy-review-content">
-              ${this.renderStrategyForReview()}
-            </div>
-          </div>
-
-          <!-- Chat Panel -->
-          <div class="chat-refinement-panel">
-            <div class="chat-refinement-header">
-              <div class="chat-persona-info">
-                <div class="persona-avatar-small">🎯</div>
-                <div class="persona-details-small">
-                  <h4>Creative Strategist</h4>
-                  <span class="persona-status">Ready to refine your strategy</span>
-                </div>
-              </div>
-              <div class="chat-controls">
-                <button class="btn btn-ghost btn-sm" id="save-chat-btn">💾 Save</button>
-                <button class="btn btn-primary btn-sm" id="finalize-strategy-btn">✅ Apply Changes</button>
-              </div>
-            </div>
-            <div id="ai-chat-container" class="ai-chat-interface">
-              <!-- AI Chat Interface will be inserted here -->
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Setup event listeners
-      const closeBtn = document.getElementById('close-refinement-btn');
-      const saveBtn = document.getElementById('save-chat-btn');
-      const finalizeBtn = document.getElementById('finalize-strategy-btn');
-
-      closeBtn?.addEventListener('click', () => {
-        this.modernAIChat = null;
-        this.render(); // Return to normal strategy view
-      });
-
-      saveBtn?.addEventListener('click', () => {
-        // Save current chat progress
-        this.showSuccess('Chat progress saved!');
-      });
-
-      finalizeBtn?.addEventListener('click', () => {
-        // Finalize and apply strategy changes
-        this.finalizeStrategyRefinement();
-      });
-
-      // Initialize modern AI chat interface
-      this.modernAIChat = new ModernAIChatInterface('ai-chat-container');
-      await this.modernAIChat.initialize('CREATIVE_STRATEGIST', this.currentStrategy);
-
-      // Setup expandable sections
-      this.setupExpandableListeners();
-
-      // Listen for strategy refresh events
-      window.addEventListener('refreshStrategy', () => {
-        this.loadExistingStrategy().then(() => this.render());
-      });
-
-    } catch (error) {
-      console.error('Failed to start strategy refinement chat:', error);
-      this.showError('Failed to start strategy refinement session');
-    }
-  }
-
-  /**
-   * Render strategy for review in refinement mode
-   */
-  private renderStrategyForReview(): string {
-    if (!this.currentStrategy) return '';
-
-    return `
-      <div class="strategy-review">
-        <!-- Quick Overview -->
-        <div class="review-section">
-          <h4>Creative Concept</h4>
-          <div class="review-content">
-            ${this.escapeHtml(this.currentStrategy.creative_concept)}
-          </div>
-        </div>
-
-        <!-- Key Details -->
-        <div class="review-grid">
-          <div class="review-card">
-            <h5>Target Audience</h5>
-            <span class="audience-badge">${this.formatAudience(this.currentStrategy.target_audience)}</span>
-          </div>
-          <div class="review-card">
-            <h5>Tone</h5>
-            <span class="tone-badge">${this.formatTone(this.currentStrategy.tone)}</span>
-          </div>
-          <div class="review-card">
-            <h5>Themes</h5>
-            <span class="count-badge">${this.currentStrategy.key_themes.length} themes</span>
-          </div>
-          <div class="review-card">
-            <h5>Characters</h5>
-            <span class="count-badge">${this.currentStrategy.character_archetypes.length} characters</span>
-          </div>
-        </div>
-
-        <!-- Expandable Sections -->
-        <div class="review-expandable">
-          <div class="expand-section">
-            <button class="expand-trigger" data-target="themes-detail">
-              <span>Key Themes</span>
-              <span class="expand-icon">▼</span>
-            </button>
-            <div class="expand-content" id="themes-detail" style="display: none;">
-              <div class="themes-list-compact">
-                ${this.currentStrategy.key_themes.map(theme => 
-                  `<span class="theme-tag-compact">${this.escapeHtml(theme)}</span>`
-                ).join('')}
-              </div>
-            </div>
-          </div>
-
-          <div class="expand-section">
-            <button class="expand-trigger" data-target="characters-detail">
-              <span>Characters (${this.currentStrategy.character_archetypes.length})</span>
-              <span class="expand-icon">▼</span>
-            </button>
-            <div class="expand-content" id="characters-detail" style="display: none;">
-              ${this.currentStrategy.character_archetypes.map(char => `
-                <div class="character-compact">
-                  <strong>${this.escapeHtml(char.name)}</strong> - ${this.escapeHtml(char.role)}
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div class="expand-section">
-            <button class="expand-trigger" data-target="angles-detail">
-              <span>Satirical Angles (${this.currentStrategy.satirical_angles.length})</span>
-              <span class="expand-icon">▼</span>
-            </button>
-            <div class="expand-content" id="angles-detail" style="display: none;">
-              ${this.currentStrategy.satirical_angles.map(angle => `
-                <div class="angle-compact">
-                  <span class="angle-type-compact">${angle.angle_type}</span>
-                  <p>${this.escapeHtml(angle.description)}</p>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Setup expandable section listeners
-   */
-  private setupExpandableListeners(): void {
-    const triggers = document.querySelectorAll('.expand-trigger');
-    triggers.forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        const target = (e.currentTarget as HTMLElement).getAttribute('data-target');
-        const content = document.getElementById(target!);
-        const icon = trigger.querySelector('.expand-icon');
-        
-        if (content && icon) {
-          const isVisible = content.style.display !== 'none';
-          content.style.display = isVisible ? 'none' : 'block';
-          icon.textContent = isVisible ? '▼' : '▲';
-        }
-      });
-    });
-  }
-
-  /**
-   * Finalize strategy refinement
-   */
-  private async finalizeStrategyRefinement(): Promise<void> {
-    const confirmed = confirm('Apply the refined strategy changes? This will update your current strategy.');
-    if (!confirmed) return;
-
-    try {
-      // For now, just show success. In production, this would apply chat-generated changes
-      this.showSuccess('Strategy refinement applied successfully!');
-      
-      // Close chat and return to normal view
-      this.modernAIChat = null;
+      // Switch to edit mode with chat enabled
+      this.currentStrategy = null; // Temporarily clear to show workspace
       this.render();
-    } catch (error) {
-      console.error('Failed to finalize strategy refinement:', error);
-      this.showError('Failed to apply strategy changes');
-    }
-  }
-
-  /**
-   * Start collaborative chat with AI
-   */
-  private async startCollaborativeChat(): Promise<void> {
-    if (!this.currentProjectId) return;
-
-    try {
-      // Hide the form and show chat interface
-      const container = this.getContainer();
-      if (!container) return;
-
-      // Create chat container with proper layout
-      container.innerHTML = `
-        <div class="creative-strategy-chat">
-          <div class="chat-intro-header">
-            <div class="intro-content">
-              <h3>🤖 Collaborative Strategy Development</h3>
-              <p>Work with the Creative Strategist to develop your satirical video strategy</p>
-            </div>
-            <button class="btn btn-outline" id="back-to-form-btn">← Back to Form</button>
-          </div>
-          <div id="ai-chat-container" class="ai-chat-interface" style="height: calc(100vh - 120px); min-height: 500px;">
-            <!-- AI Chat Interface will be inserted here -->
-          </div>
-        </div>
-      `;
-
-      // Setup back button
-      const backBtn = document.getElementById('back-to-form-btn');
-      backBtn?.addEventListener('click', () => {
-        this.modernAIChat = null;
-        this.render(); // Re-render the form
-      });
-
-      // Initialize modern AI chat interface
-      console.log('DEBUG: Starting ModernAIChatInterface initialization');
-      this.modernAIChat = new ModernAIChatInterface('ai-chat-container');
-      console.log('DEBUG: ModernAIChatInterface created, initializing...');
-      await this.modernAIChat.initialize('CREATIVE_STRATEGIST');
-      console.log('DEBUG: ModernAIChatInterface initialized');
-
-      // Listen for strategy refresh events
-      window.addEventListener('refreshStrategy', () => {
-        this.loadExistingStrategy().then(() => this.render());
-      });
-
-    } catch (error) {
-      console.error('Failed to start collaborative chat:', error);
-      this.showError('Failed to start collaborative chat session');
-    }
-  }
-
-  /**
-   * Generate AI-powered strategy (quick generation)
-   */
-  private async generateAIStrategy(): Promise<void> {
-    if (!this.currentProjectId) return;
-
-    try {
-      const generateBtn = document.getElementById('generate-ai-strategy-btn') as HTMLButtonElement;
-      generateBtn.disabled = true;
-      generateBtn.textContent = 'Generating Strategy...';
-
-      // @ts-ignore
-      const result = await window.electronAPI.database.generateCreativeStrategy(this.currentProjectId);
-
-      if (result.success) {
-        this.currentStrategy = result.data;
-        this.render();
-        this.showSuccess('Creative Strategy generated successfully!');
-      } else {
-        this.showError(result.error || 'Failed to generate strategy');
-      }
-    } catch (error) {
-      console.error('AI strategy generation failed:', error);
-      this.showError('Failed to generate AI strategy');
-    } finally {
-      const generateBtn = document.getElementById('generate-ai-strategy-btn') as HTMLButtonElement;
-      if (generateBtn) {
-        generateBtn.disabled = false;
-        generateBtn.textContent = '🚀 Quick AI Generation';
-      }
-    }
-  }
-
-  /**
-   * Handle form submission
-   */
-  private async handleFormSubmit(event: Event): Promise<void> {
-    event.preventDefault();
-
-    if (!this.currentProjectId) return;
-
-    try {
-      const formData = this.collectFormData();
-      if (!formData) return;
-
-      const submitBtn = document.querySelector('#creative-strategy-form button[type="submit"]') as HTMLButtonElement;
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Creating Strategy...';
-
-      // @ts-ignore
-      const result = await window.electronAPI.database.createCreativeStrategy(formData);
-
-      if (result.success) {
-        this.currentStrategy = result.data;
-        this.render();
-        this.showSuccess('Creative Strategy created successfully!');
-      } else {
-        this.showError(result.error || 'Failed to create strategy');
-      }
-    } catch (error) {
-      console.error('Strategy creation failed:', error);
-      this.showError('Failed to create strategy');
-    }
-  }
-
-  /**
-   * Collect form data
-   */
-  private collectFormData(): any | null {
-    const form = document.getElementById('creative-strategy-form') as HTMLFormElement;
-    if (!form) return null;
-
-    const formData = new FormData(form);
-    
-    // Collect themes
-    const themes = Array.from(document.querySelectorAll('#themes-list input'))
-      .map(input => (input as HTMLInputElement).value.trim())
-      .filter(value => value.length > 0);
-
-    // Collect satirical angles
-    const angles: SatiricalAngle[] = [];
-    const angleGroups = document.querySelectorAll('.angle-input-group');
-    angleGroups.forEach(group => {
-      const typeSelect = group.querySelector('select[name="angle_type"]') as HTMLSelectElement;
-      const descriptionTextarea = group.querySelector('textarea[name="angle_description"]') as HTMLTextAreaElement;
-      const elementInputs = group.querySelectorAll('input[name="angle_element"]');
       
-      if (typeSelect.value && descriptionTextarea.value.trim()) {
-        const elements = Array.from(elementInputs)
-          .map(input => (input as HTMLInputElement).value.trim())
-          .filter(value => value.length > 0);
-
-        angles.push({
-          angle_type: typeSelect.value as any,
-          description: descriptionTextarea.value.trim(),
-          key_elements: elements
-        });
-      }
-    });
-
-    // Collect character archetypes
-    const characters: CharacterArchetype[] = [];
-    const characterGroups = document.querySelectorAll('.character-input-group');
-    characterGroups.forEach(group => {
-      const nameInput = group.querySelector('input[name="character_name"]') as HTMLInputElement;
-      const roleInput = group.querySelector('input[name="character_role"]') as HTMLInputElement;
-      const visualInput = group.querySelector('input[name="character_visual"]') as HTMLInputElement;
-      const traitInputs = group.querySelectorAll('input[name="character_trait"]');
+      // Pre-populate form with existing data
+      setTimeout(() => {
+        this.populateFormWithExistingStrategy();
+        this.startCollaborativeChat();
+      }, 100);
       
-      if (nameInput.value.trim() && roleInput.value.trim()) {
-        const traits = Array.from(traitInputs)
-          .map(input => (input as HTMLInputElement).value.trim())
-          .filter(value => value.length > 0);
+    } catch (error) {
+      console.error('Failed to start refinement chat:', error);
+      alert('Failed to start refinement chat.');
+    }
+  }
 
-        characters.push({
-          name: nameInput.value.trim(),
-          role: roleInput.value.trim(),
-          visual_description: visualInput.value.trim() || undefined,
-          satirical_traits: traits
-        });
-      }
-    });
+  /**
+   * Populate form with existing strategy data
+   */
+  private populateFormWithExistingStrategy(): void {
+    if (!this.currentStrategy) return;
 
-    return {
-      project_id: this.currentProjectId,
-      creative_concept: formData.get('creative_concept'),
-      target_audience: formData.get('target_audience'),
-      tone: formData.get('satirical_tone'),
-      key_themes: themes,
-      satirical_angles: angles,
-      character_archetypes: characters,
-      visual_style_guide: {
-        color_palette: formData.get('color_palette') || undefined,
-        cinematography_notes: formData.get('cinematography_notes') || undefined,
-        overall_aesthetic: formData.get('overall_aesthetic') || undefined
-      },
-      created_by: 'temp-user-id' // TODO: Get from session
-    };
+    const strategy = this.currentStrategy;
+
+    // Populate basic fields
+    const conceptEl = document.getElementById('creative-concept') as HTMLTextAreaElement;
+    if (conceptEl) conceptEl.value = strategy.creative_concept;
+
+    const audienceEl = document.getElementById('target-audience') as HTMLTextAreaElement;
+    if (audienceEl) audienceEl.value = strategy.target_audience;
+
+    const toneEl = document.getElementById('satirical-tone') as HTMLTextAreaElement;
+    if (toneEl) toneEl.value = strategy.tone;
+
+    // Populate visual style
+    const aestheticEl = document.getElementById('overall-aesthetic') as HTMLTextAreaElement;
+    if (aestheticEl) aestheticEl.value = strategy.visual_style_guide.overall_aesthetic || '';
+
+    const paletteEl = document.getElementById('color-palette') as HTMLTextAreaElement;
+    if (paletteEl) paletteEl.value = strategy.visual_style_guide.color_palette || '';
+
+    const cinematographyEl = document.getElementById('cinematography-notes') as HTMLTextAreaElement;
+    if (cinematographyEl) cinematographyEl.value = strategy.visual_style_guide.cinematography_notes || '';
+
+    // Populate themes
+    const themesList = document.getElementById('themes-list');
+    if (themesList && strategy.key_themes) {
+      strategy.key_themes.forEach(theme => {
+        const themeElement = document.createElement('div');
+        themeElement.className = 'theme-tag';
+        themeElement.innerHTML = `
+          <span class="theme-text">${this.escapeHtml(theme)}</span>
+          <button type="button" class="theme-remove-btn">×</button>
+        `;
+        const removeBtn = themeElement.querySelector('.theme-remove-btn');
+        removeBtn?.addEventListener('click', () => themeElement.remove());
+        themesList.appendChild(themeElement);
+      });
+    }
+
+    // Populate character archetypes
+    const charactersList = document.getElementById('characters-list');
+    if (charactersList && strategy.character_archetypes) {
+      strategy.character_archetypes.forEach(character => {
+        const characterElement = document.createElement('div');
+        characterElement.className = 'character-archetype-input';
+        characterElement.innerHTML = `
+          <div class="character-inputs">
+            <input type="text" class="character-archetype-name" value="${this.escapeHtml(character.name)}" placeholder="Archetype name" required>
+            <textarea class="character-archetype-description" placeholder="Brief personality description" rows="2">${this.escapeHtml(character.satirical_traits.join(', '))}</textarea>
+            <button type="button" class="character-remove-btn">Remove</button>
+          </div>
+        `;
+        const removeBtn = characterElement.querySelector('.character-remove-btn');
+        removeBtn?.addEventListener('click', () => characterElement.remove());
+        charactersList.appendChild(characterElement);
+      });
+    }
   }
 
   /**
    * Edit existing strategy
    */
   private editStrategy(): void {
-    // TODO: Implement edit functionality
-    alert('Strategy editing will be available in a future update');
+    // Switch to workspace mode and populate with existing data
+    this.refineWithChat();
   }
 
   /**
-   * Generate director's notes from strategy
+   * Generate Director's Notes from completed strategy
    */
   private async generateDirectorNotes(): Promise<void> {
     if (!this.currentStrategy) return;
 
     try {
+      this.isLoading = true;
+
       // @ts-ignore
       const result = await window.electronAPI.database.generateDirectorNotes(this.currentStrategy.id);
-      
+
       if (result.success) {
-        this.showSuccess('Director\'s Notes generated successfully! Check the Script tab.');
+        alert('Director\'s Notes generated successfully! You can view them in the next workflow stage.');
       } else {
-        this.showError(result.error || 'Failed to generate director\'s notes');
+        throw new Error(result.error || 'Failed to generate director notes');
       }
+
     } catch (error) {
-      console.error('Director notes generation failed:', error);
-      this.showError('Failed to generate director\'s notes');
+      console.error('Failed to generate director notes:', error);
+      alert('Failed to generate Director\'s Notes. Please try again.');
+    } finally {
+      this.isLoading = false;
     }
   }
 
   /**
-   * Cancel creation
+   * Render character archetype
    */
-  private cancel(): void {
-    // Go back to project dashboard
-    const overviewTab = document.querySelector('[data-tab="overview"]') as HTMLElement;
-    overviewTab?.click();
-  }
-
-  /**
-   * Get container element
-   */
-  private getContainer(): HTMLElement | null {
-    return document.getElementById('strategy-tab');
+  private renderCharacterArchetype(character: CharacterArchetype): string {
+    return `
+      <div class="character-card">
+        <h6>${this.escapeHtml(character.name)}</h6>
+        <div class="character-traits">
+          ${character.satirical_traits.map((trait: string) => 
+            `<span class="trait-tag">${this.escapeHtml(trait)}</span>`
+          ).join('')}
+        </div>
+        <div class="character-role">${this.escapeHtml(character.role)}</div>
+      </div>
+    `;
   }
 
   /**
@@ -1090,6 +980,7 @@ export class CreativeStrategyManager {
       .join(' ');
   }
 
+
   /**
    * Escape HTML to prevent XSS
    */
@@ -1116,20 +1007,6 @@ export class CreativeStrategyManager {
         </button>
       </div>
     `;
-  }
-
-  /**
-   * Show success message
-   */
-  private showSuccess(message: string): void {
-    alert(`✅ ${message}`);
-  }
-
-  /**
-   * Show error message
-   */
-  private showError(message: string): void {
-    alert(`❌ Error: ${message}`);
   }
 }
 

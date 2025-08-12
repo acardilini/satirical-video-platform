@@ -71,6 +71,12 @@ npm start
 2. **Per-Agent Model Selection:** Each agent can then select which model to use from your configured providers
 3. **Test & Chat:** Test connections and start conversations with your specialized AI agents!
 
+**Quick Fix for AI Configuration Issues:**
+If you encounter "agent not properly configured" errors:
+1. Set environment variables in `.env` as a fallback
+2. Or use Global API Settings in the app (Settings → Global API Settings)
+3. Each agent can then be individually configured with specific models
+
 ## 📱 Core Features
 
 - **Project Management** - Organize satirical video projects

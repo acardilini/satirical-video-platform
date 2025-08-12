@@ -187,6 +187,9 @@ export class LLMSettings {
       apiKeyLinks.style.display = 'block';
     } else if (provider === 'anthropic') {
       modelSelect.innerHTML += `
+        <option value="claude-4-20250514">Claude 4 (Latest)</option>
+        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Latest)</option>
+        <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Previous)</option>
         <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended)</option>
         <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
         <option value="claude-3-opus-20240229">Claude 3 Opus</option>

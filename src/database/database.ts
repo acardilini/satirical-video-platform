@@ -190,6 +190,20 @@ export class DatabaseService {
   }
 
   /**
+   * Update project satirical context
+   */
+  async updateProjectContext(projectId: string, contextType: string): Promise<APIResponse<any>> {
+    return await mockDatabaseService.updateProjectContext(projectId, contextType);
+  }
+
+  /**
+   * Update project satirical format
+   */
+  async updateProjectFormat(projectId: string, formatType: string): Promise<APIResponse<any>> {
+    return await mockDatabaseService.updateProjectFormat(projectId, formatType);
+  }
+
+  /**
    * Generate AI-powered creative strategy
    */
   async generateCreativeStrategy(projectId: string): Promise<APIResponse<CreativeStrategy>> {
@@ -219,11 +233,31 @@ export class DatabaseService {
       // Import LLM service
       const { LLMService } = await import('../services/llm');
       
-      // Create a basic config - the actual provider will be determined by agent configuration
-      const llmService = new LLMService({
-        provider: 'openai', // Default, will be overridden by agent config
-        apiKey: '',  // Will be overridden by agent config
-      });
+      // Create a basic config with fallback values
+      let llmConfig: any = {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY || '',
+        model: 'gpt-4'
+      };
+      
+      // Try alternative providers if OpenAI key is not available
+      if (!llmConfig.apiKey) {
+        if (process.env.ANTHROPIC_API_KEY) {
+          llmConfig = {
+            provider: 'anthropic',
+            apiKey: process.env.ANTHROPIC_API_KEY,
+            model: 'claude-3-5-sonnet-20241022'
+          };
+        } else if (process.env.GEMINI_API_KEY) {
+          llmConfig = {
+            provider: 'gemini',
+            apiKey: process.env.GEMINI_API_KEY,
+            model: 'gemini-1.5-pro'
+          };
+        }
+      }
+      
+      const llmService = new LLMService(llmConfig);
 
       // Construct context from articles
       const articlesContext = articles.map(article => 

@@ -49,6 +49,12 @@ export class AgentConfigService {
    */
   public static saveAgentConfig(persona: PersonaType, config: Omit<AgentConfig, 'persona'>): void {
     try {
+      // Check if localStorage is available (renderer process only)
+      if (typeof localStorage === 'undefined') {
+        console.log('DEBUG: localStorage not available in main process, cannot save config');
+        return;
+      }
+      
       const configs = this.loadStoredConfigs();
       configs[persona] = {
         provider: config.provider,
@@ -72,6 +78,12 @@ export class AgentConfigService {
    * Reset all agent configurations
    */
   public static resetAllConfigs(): void {
+    // Check if localStorage is available (renderer process only)
+    if (typeof localStorage === 'undefined') {
+      console.log('DEBUG: localStorage not available in main process, cannot reset configs');
+      return;
+    }
+    
     localStorage.removeItem(this.STORAGE_KEY);
   }
 
@@ -97,6 +109,12 @@ export class AgentConfigService {
    */
   public static getDefaultConfig(): AgentConfig | null {
     try {
+      // Check if localStorage is available (renderer process only)
+      if (typeof localStorage === 'undefined') {
+        console.log('DEBUG: localStorage not available in main process, cannot get default config');
+        return null;
+      }
+      
       const globalSettings = localStorage.getItem('llm-settings');
       if (!globalSettings) return null;
 
@@ -144,10 +162,16 @@ export class AgentConfigService {
   }
 
   /**
-   * Load stored configurations from localStorage
+   * Load stored configurations from localStorage (or return empty if not available)
    */
   private static loadStoredConfigs(): StoredAgentConfig {
     try {
+      // Check if localStorage is available (renderer process only)
+      if (typeof localStorage === 'undefined') {
+        console.log('DEBUG: localStorage not available in main process, returning empty configs');
+        return {};
+      }
+      
       const stored = localStorage.getItem(this.STORAGE_KEY);
       const configs = stored ? JSON.parse(stored) : {};
       console.log('DEBUG: loadStoredConfigs:', configs);
@@ -163,6 +187,12 @@ export class AgentConfigService {
    */
   private static getGlobalAPIKey(provider: string): string | null {
     try {
+      // Check if localStorage is available (renderer process only)
+      if (typeof localStorage === 'undefined') {
+        console.log('DEBUG: localStorage not available in main process, cannot get API key');
+        return null;
+      }
+      
       const globalSettings = localStorage.getItem('global-api-settings');
       console.log('DEBUG: globalSettings raw:', globalSettings);
       
@@ -227,6 +257,7 @@ export class AgentConfigService {
         ];
       case 'anthropic':
         return [
+          { value: 'claude-4-20250514', label: 'Claude 4 (Latest)' },
           { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Latest)' },
           { value: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet (Previous)' },
           { value: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet' },

@@ -1,7 +1,7 @@
 // Project Overview Dashboard Component
 // Provides analytics, progress tracking, and project insights
 
-import { Project, NewsArticle, PersonaType } from '../../shared/types/index.js';
+import { Project, NewsArticle, PersonaType, SatiricalContextType, SatiricalFormat } from '../../shared/types/index.js';
 
 interface ProjectStats {
   totalArticles: number;
@@ -144,6 +144,55 @@ export class ProjectDashboard {
             <button class="btn btn-secondary dashboard-action" data-action="view-articles">
               📋 View All Articles
             </button>
+          </div>
+        </div>
+
+        <!-- Satirical Lens Configuration -->
+        <div class="satirical-lens-section">
+          <h3>🎯 Satirical Lens</h3>
+          <p>This perspective guides all AI agents working on your project</p>
+          <div id="current-lens-display">
+            <!-- Current lens will be displayed here -->
+          </div>
+          <div class="lens-selector">
+            <select id="project-satirical-lens-select" class="form-control">
+              <option value="">Choose satirical perspective...</option>
+              <option value="ANIMAL_LIBERATION">🐾 Animal Liberation & Vegan Ethics</option>
+              <option value="ENVIRONMENTAL">🌍 Environmental Justice & Climate Action</option>
+              <option value="GENERAL">💭 General Satirical Perspective</option>
+            </select>
+            <button type="button" id="apply-lens-btn" class="btn btn-primary">Apply Lens</button>
+          </div>
+          <div id="lens-description" class="lens-description" style="display: none;">
+            <!-- Lens description will be populated here -->
+          </div>
+        </div>
+
+        <!-- Satirical Format Configuration -->
+        <div class="satirical-format-section">
+          <h3>🎬 Satirical Format</h3>
+          <p>Video format that shapes how your satirical content will be created</p>
+          <div id="current-format-display">
+            <!-- Current format will be displayed here -->
+          </div>
+          <div class="format-selector">
+            <select id="project-satirical-format-select" class="form-control">
+              <option value="">Choose video format...</option>
+              <option value="NEWS_PARODY">📺 News Parody (BBC/ABC serious news style)</option>
+              <option value="VOX_POP">🎤 Vox Pop (street interviews/public opinion)</option>
+              <option value="MORNING_TV_INTERVIEW">☀️ Morning TV Interview (breakfast TV guest segment)</option>
+              <option value="MOCKUMENTARY">🎬 Documentary Style (BBC/ABC mockumentary)</option>
+              <option value="SOCIAL_MEDIA">📱 Social Media (TikTok/Instagram viral format)</option>
+              <option value="SKETCH_COMEDY">🎭 Sketch Comedy (Monty Python/DAAS style)</option>
+              <option value="SATIRICAL_ARTICLE">📰 Satirical Article (Private Eye/Chaser style)</option>
+              <option value="PANEL_SHOW">🎪 Panel Show (Have I Got News/Good News Week)</option>
+              <option value="COMMERCIAL_PARODY">📢 Commercial Parody (fake advertisements)</option>
+              <option value="REALITY_TV_PARODY">📹 Reality TV Parody (competition show mockery)</option>
+            </select>
+            <button type="button" id="apply-format-btn" class="btn btn-primary">Apply Format</button>
+          </div>
+          <div id="format-description" class="format-description" style="display: none;">
+            <!-- Format description will be populated here -->
           </div>
         </div>
 
@@ -450,6 +499,431 @@ export class ProjectDashboard {
         }
       });
     });
+    
+    // Satirical lens selector
+    this.setupLensSelector();
+    
+    // Satirical format selector
+    this.setupFormatSelector();
+  }
+
+  /**
+   * Setup satirical lens selector
+   */
+  private setupLensSelector(): void {
+    const lensSelect = document.getElementById('project-satirical-lens-select') as HTMLSelectElement;
+    const applyLensBtn = document.getElementById('apply-lens-btn');
+    const lensDescription = document.getElementById('lens-description');
+    
+    // Show lens description when selection changes
+    lensSelect?.addEventListener('change', () => {
+      const selectedValue = lensSelect.value as SatiricalContextType;
+      this.showLensDescription(selectedValue);
+    });
+    
+    // Apply lens to project
+    applyLensBtn?.addEventListener('click', () => {
+      const selectedValue = lensSelect.value as SatiricalContextType;
+      if (selectedValue) {
+        this.applyLensToProject(selectedValue);
+      } else {
+        alert('Please select a satirical lens first.');
+      }
+    });
+    
+    // Load and display current lens
+    this.loadCurrentLens();
+  }
+
+  /**
+   * Show lens description
+   */
+  private showLensDescription(lensType: SatiricalContextType): void {
+    const lensDescription = document.getElementById('lens-description');
+    if (!lensDescription || !lensType) {
+      if (lensDescription) lensDescription.style.display = 'none';
+      return;
+    }
+    
+    const lensData = this.getLensDescription(lensType);
+    
+    if (lensData) {
+      lensDescription.innerHTML = `
+        <div class="lens-preview">
+          <h4>${lensData.name}</h4>
+          <p><strong>Focus:</strong> ${lensData.description}</p>
+          <p><strong>Approach:</strong> ${lensData.ethicalFramework}</p>
+          <div class="lens-principles">
+            <strong>Key Principles:</strong>
+            <ul>
+              ${lensData.keyPrinciples.slice(0, 3).map((principle: string) => `<li>${principle}</li>`).join('')}
+              ${lensData.keyPrinciples.length > 3 ? `<li><em>...and ${lensData.keyPrinciples.length - 3} more</em></li>` : ''}
+            </ul>
+          </div>
+        </div>
+      `;
+      lensDescription.style.display = 'block';
+    }
+  }
+
+  /**
+   * Get lens description data
+   */
+  private getLensDescription(lensType: SatiricalContextType): any {
+    const lenses = {
+      'ANIMAL_LIBERATION': {
+        name: 'Animal Liberation & Vegan Ethics',
+        description: 'Strong anti-anthropocentric perspective focused on animal liberation, rights, and vegan ethics',
+        ethicalFramework: 'Animal liberation philosophy with strong vegan ethics, rejecting speciesism and anthropocentrism',
+        keyPrinciples: [
+          'Animals are sentient beings with inherent worth, not property or resources',
+          'All animal use is exploitation - reject "humane" or "welfare" approaches as inadequate',
+          'Veganism is the baseline ethical position, not an extreme view',
+          'Speciesism is a form of discrimination as serious as racism or sexism',
+          'The animal perspective must be centered, not human convenience'
+        ]
+      },
+      'ENVIRONMENTAL': {
+        name: 'Environmental Justice & Climate Action',
+        description: 'Focus on environmental destruction, climate change, and corporate greenwashing',
+        ethicalFramework: 'Environmental justice perspective emphasizing systemic change over individual action',
+        keyPrinciples: [
+          'Climate change is primarily caused by corporate interests, not individual choices',
+          'Environmental destruction disproportionately affects marginalized communities',
+          'Greenwashing is a deliberate strategy to avoid systemic change',
+          'Capitalism and endless growth are incompatible with environmental sustainability'
+        ]
+      },
+      'GENERAL': {
+        name: 'General Satirical Perspective',
+        description: 'Broad satirical approach without specific ethical framework',
+        ethicalFramework: 'General satirical perspective focused on exposing hypocrisy and absurdity',
+        keyPrinciples: [
+          'Question authority and conventional wisdom',
+          'Expose hypocrisy and contradiction',
+          'Challenge power structures',
+          'Use humor to make serious points accessible'
+        ]
+      }
+    };
+    
+    return lenses[lensType as keyof typeof lenses] || null;
+  }
+
+  /**
+   * Apply lens to project
+   */
+  private async applyLensToProject(lensType: SatiricalContextType): Promise<void> {
+    try {
+      if (!this.currentProject) return;
+      
+      // @ts-ignore - Call backend to update project with satirical context
+      const result = await window.electronAPI.database.updateProjectContext(this.currentProject.id, lensType);
+      
+      if (result.success) {
+        alert(`✅ ${this.getLensDescription(lensType)?.name} lens applied to project!\n\nAll AI agents will now use this perspective when helping with your satirical content.`);
+        
+        // Update the current lens display
+        this.updateCurrentLensDisplay(lensType);
+        
+        // Refresh project data
+        await this.refreshProjectData();
+      } else {
+        throw new Error(result.error || 'Failed to apply lens');
+      }
+    } catch (error) {
+      console.error('Failed to apply lens:', error);
+      alert('Failed to apply satirical lens. Please try again.');
+    }
+  }
+
+  /**
+   * Load and display current lens
+   */
+  private async loadCurrentLens(): Promise<void> {
+    try {
+      if (!this.currentProject) return;
+      
+      if (this.currentProject.satirical_context) {
+        const lensType = this.currentProject.satirical_context.type;
+        
+        // Set the selector to current lens
+        const lensSelect = document.getElementById('project-satirical-lens-select') as HTMLSelectElement;
+        if (lensSelect) {
+          lensSelect.value = lensType;
+          this.showLensDescription(lensType);
+        }
+        
+        // Update current lens display
+        this.updateCurrentLensDisplay(lensType);
+      } else {
+        // No lens set, show default message
+        this.updateCurrentLensDisplay(null);
+      }
+    } catch (error) {
+      console.error('Failed to load current lens:', error);
+    }
+  }
+
+  /**
+   * Update current lens display
+   */
+  private updateCurrentLensDisplay(lensType: SatiricalContextType | null): void {
+    const currentLensDisplay = document.getElementById('current-lens-display');
+    if (!currentLensDisplay) return;
+    
+    if (lensType) {
+      const lensData = this.getLensDescription(lensType);
+      if (lensData) {
+        currentLensDisplay.innerHTML = `
+          <div class="current-lens">
+            <span class="lens-icon">✅</span>
+            <div class="lens-info">
+              <strong>Active Lens:</strong> ${lensData.name}
+              <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: #666;">All AI agents use this perspective</p>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      currentLensDisplay.innerHTML = `
+        <div class="no-lens">
+          <span class="lens-icon">⚠️</span>
+          <div class="lens-info">
+            <strong>No satirical lens set</strong>
+            <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: #666;">AI agents will use general satirical approach</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Setup satirical format selector
+   */
+  private setupFormatSelector(): void {
+    const formatSelect = document.getElementById('project-satirical-format-select') as HTMLSelectElement;
+    const applyFormatBtn = document.getElementById('apply-format-btn');
+    const formatDescription = document.getElementById('format-description');
+    
+    // Show format description when selection changes
+    formatSelect?.addEventListener('change', () => {
+      const selectedValue = formatSelect.value as SatiricalFormat;
+      this.showFormatDescription(selectedValue);
+    });
+    
+    // Apply format to project
+    applyFormatBtn?.addEventListener('click', async () => {
+      const selectedFormat = formatSelect?.value as SatiricalFormat;
+      if (!selectedFormat) {
+        alert('Please select a video format first.');
+        return;
+      }
+      
+      await this.applyFormatToProject(selectedFormat);
+    });
+    
+    // Load current format on initialization
+    this.loadCurrentFormat();
+  }
+
+  /**
+   * Show format description
+   */
+  private showFormatDescription(formatType: SatiricalFormat): void {
+    const formatDescription = document.getElementById('format-description');
+    if (!formatDescription || !formatType) {
+      if (formatDescription) formatDescription.style.display = 'none';
+      return;
+    }
+
+    const formatData = this.getFormatDescription(formatType);
+    if (formatData) {
+      formatDescription.innerHTML = `
+        <div class="format-preview">
+          <h4>${formatData.name}</h4>
+          <p><strong>Style:</strong> ${formatData.description}</p>
+          <p><strong>Key Elements:</strong> ${formatData.keyElements.join(', ')}</p>
+          <p><strong>Examples:</strong> ${formatData.examples}</p>
+        </div>
+      `;
+      formatDescription.style.display = 'block';
+    }
+  }
+
+  /**
+   * Get format description data
+   */
+  private getFormatDescription(formatType: SatiricalFormat) {
+    const formats = {
+      'NEWS_PARODY': {
+        name: '📺 News Parody',
+        description: 'Serious news format with deadpan delivery of absurd content',
+        keyElements: ['Authoritative anchor', 'Professional graphics', 'Reporter segments', 'BBC/ABC serious tone'],
+        examples: 'The Day Today, Brass Eye, Clarke and Dawe, The Chaser'
+      },
+      'VOX_POP': {
+        name: '🎤 Vox Pop',
+        description: 'Street interviews with members of the public about current issues',
+        keyElements: ['Roving reporter', 'Public interviews', 'Street locations', 'Diverse public responses'],
+        examples: 'The Chaser vox pops, Private Eye street interviews, Charlie Brooker segments'
+      },
+      'MORNING_TV_INTERVIEW': {
+        name: '☀️ Morning TV Interview',
+        description: 'Breakfast television guest segment with overly cheerful hosts',
+        keyElements: ['Chirpy presenters', 'Sofa setting', 'Light questioning', 'Awkward guest dynamics'],
+        examples: 'The Day Today morning segments, Brass Eye interviews, Australian morning TV parody'
+      },
+      'MOCKUMENTARY': {
+        name: '🎬 Documentary Style',
+        description: 'Serious documentary format with deadpan presentation of ridiculous subjects',
+        keyElements: ['Talking heads', 'B-roll footage', 'Serious narrator', 'Documentary conventions'],
+        examples: 'This Country, People Just Do Nothing, Summer Heights High, The Office'
+      },
+      'SOCIAL_MEDIA': {
+        name: '📱 Social Media',
+        description: 'Viral-ready content with quick cuts and trending formats',
+        keyElements: ['Quick cuts', 'Mobile vertical format', 'Trending sounds', 'Hashtag culture'],
+        examples: 'TikTok comedy, Instagram Reels, viral content parody'
+      },
+      'SKETCH_COMEDY': {
+        name: '🎭 Sketch Comedy',
+        description: 'Character-driven scenarios with absurdist British/Australian humour',
+        keyElements: ['Recurring characters', 'Surreal situations', 'Catchphrases', 'Physical comedy'],
+        examples: 'Monty Python, The Fast Show, DAAS Kapital, Big Train, Little Britain'
+      },
+      'SATIRICAL_ARTICLE': {
+        name: '📰 Satirical Article',
+        description: 'Written satire in the style of serious journalism',
+        keyElements: ['Proper headlines', 'Bylines', 'Quotes from sources', 'News article structure'],
+        examples: 'Private Eye, The Chaser, Charlie Brooker columns, The Betoota Advocate'
+      },
+      'PANEL_SHOW': {
+        name: '🎪 Panel Show',
+        description: 'Comedy panel discussion format with satirical news commentary',
+        keyElements: ['Host and comedians', 'Current events', 'Rapid-fire jokes', 'Competitive format'],
+        examples: 'Have I Got News For You, Mock the Week, Good News Week, The Last Leg'
+      },
+      'COMMERCIAL_PARODY': {
+        name: '📢 Commercial Parody',
+        description: 'Fake advertisement with product placement and testimonials',
+        keyElements: ['Product focus', 'Spokesperson', 'Jingle/music', 'Customer testimonials'],
+        examples: 'The Fast Show ads, Brass Eye commercials, DAAS advertising parodies'
+      },
+      'REALITY_TV_PARODY': {
+        name: '📹 Reality TV Parody',
+        description: 'Reality show tropes with manufactured drama and confessionals',
+        keyElements: ['Confessional segments', 'Dramatic music', 'Competition elements', 'Artificial conflict'],
+        examples: 'Come Fly With Me, People Just Do Nothing, reality show mockery'
+      }
+    };
+    
+    return formats[formatType as keyof typeof formats] || null;
+  }
+
+  /**
+   * Apply satirical format to project
+   */
+  private async applyFormatToProject(formatType: SatiricalFormat): Promise<void> {
+    try {
+      if (!this.currentProject) return;
+      
+      // @ts-ignore - Call backend to update project with satirical format
+      const result = await window.electronAPI.database.updateProjectFormat(this.currentProject.id, formatType);
+      
+      if (result.success) {
+        alert(`✅ ${this.getFormatDescription(formatType)?.name} format applied to project!\n\nAll AI agents will now create content in this video format.`);
+        
+        // Update current project data
+        this.currentProject.satirical_format = formatType;
+        
+        // Update display
+        this.updateCurrentFormatDisplay(formatType);
+      } else {
+        throw new Error(result.error || 'Failed to update project format');
+      }
+    } catch (error) {
+      console.error('Failed to apply satirical format:', error);
+      alert('Failed to apply satirical format. Please try again.');
+    }
+  }
+
+  /**
+   * Load current format
+   */
+  private async loadCurrentFormat(): Promise<void> {
+    try {
+      if (!this.currentProject) return;
+      
+      if (this.currentProject.satirical_format) {
+        const formatType = this.currentProject.satirical_format;
+        
+        // Set the selector to current format
+        const formatSelect = document.getElementById('project-satirical-format-select') as HTMLSelectElement;
+        if (formatSelect) {
+          formatSelect.value = formatType;
+          this.showFormatDescription(formatType);
+        }
+        
+        // Update current format display
+        this.updateCurrentFormatDisplay(formatType);
+      } else {
+        // No format set, show default message
+        this.updateCurrentFormatDisplay(null);
+      }
+    } catch (error) {
+      console.error('Failed to load current format:', error);
+    }
+  }
+
+  /**
+   * Update current format display
+   */
+  private updateCurrentFormatDisplay(formatType: SatiricalFormat | null): void {
+    const currentFormatDisplay = document.getElementById('current-format-display');
+    if (!currentFormatDisplay) return;
+    
+    if (formatType) {
+      const formatData = this.getFormatDescription(formatType);
+      if (formatData) {
+        currentFormatDisplay.innerHTML = `
+          <div class="current-format">
+            <span class="format-icon">✅</span>
+            <div class="format-info">
+              <strong>Active Format:</strong> ${formatData.name}
+              <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: #666;">All AI agents will create content in this format</p>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      currentFormatDisplay.innerHTML = `
+        <div class="no-format">
+          <span class="format-icon">⚠️</span>
+          <div class="format-info">
+            <strong>No video format set</strong>
+            <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: #666;">AI agents will use general approach</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Refresh project data
+   */
+  private async refreshProjectData(): Promise<void> {
+    try {
+      if (!this.currentProject) return;
+      
+      // @ts-ignore
+      const projectResult = await window.electronAPI.database.getProjectById(this.currentProject.id);
+      if (projectResult.success) {
+        this.currentProject = projectResult.data;
+      }
+    } catch (error) {
+      console.error('Failed to refresh project data:', error);
+    }
   }
 
   /**

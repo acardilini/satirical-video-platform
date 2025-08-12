@@ -1304,6 +1304,488 @@
   font-size: 0.875rem;
 }
 
+/* ========== CREATIVE STRATEGY WORKSPACE STYLES ========== */
+
+.creative-strategy-workspace {
+  max-width: none;
+  padding: 0;
+}
+
+.workspace-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.workspace-header h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+}
+
+.workspace-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.strategy-workspace-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+  height: 80vh;
+  min-height: 700px;
+  max-height: 90vh;
+}
+
+/* Strategy Form Section */
+.strategy-form-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Strategy form content should scroll */
+.strategy-form {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+}
+
+/* AI Chat Section */
+.ai-chat-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  max-height: 80vh;
+}
+
+/* DEBUG: Visual debugging for layout issues */
+.strategy-workspace-main {
+  /* border: 2px solid red; */
+}
+
+.strategy-form-section {
+  /* border: 2px solid blue; */
+}
+
+.ai-chat-section {
+  /* border: 2px solid green; */
+}
+
+.strategy-form-section .form-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.strategy-form-section .form-header h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+}
+
+.strategy-form-section .form-header p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.strategy-form .form-group {
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.strategy-form .form-group label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.strategy-form .form-group input,
+.strategy-form .form-group select,
+.strategy-form .form-group textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+  word-wrap: break-word;
+}
+
+.strategy-form .form-group input:focus,
+.strategy-form .form-group select:focus,
+.strategy-form .form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.strategy-form .form-group small {
+  display: block;
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Themes Input Section */
+.themes-input-section {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-width: 0;
+}
+
+.themes-input-section input {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-small:hover {
+  background: #2980b9;
+}
+
+.themes-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.theme-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  border: 1px solid #bbdefb;
+  word-break: break-word;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.theme-remove-btn {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.theme-remove-btn:hover {
+  background: rgba(25, 118, 210, 0.1);
+}
+
+/* Character Archetypes */
+.character-archetype-input {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.character-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.character-archetype-name,
+.character-archetype-description {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.character-remove-btn {
+  align-self: flex-start;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.character-remove-btn:hover {
+  background: #c0392b;
+}
+
+/* Visual Style Inputs */
+.visual-style-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.style-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.style-input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.style-input-group input,
+.style-input-group textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+
+.ai-chat-section .chat-header {
+  padding: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  text-align: center;
+}
+
+.ai-chat-section .chat-header h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+}
+
+.ai-chat-section .chat-header p {
+  color: #6c757d;
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chat-start-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+.chat-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* When chat is in placeholder mode, show tips below */
+.ai-chat-section .chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.chat-placeholder p {
+  margin: 0 0 0.5rem 0;
+}
+
+.placeholder-hint {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Strategy Tips */
+.strategy-tips {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Tips at bottom of page */
+.strategy-tips-bottom {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+}
+
+.strategy-tips-bottom h6 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+}
+
+.tips-grid span {
+  color: #6c757d;
+  font-size: 0.7rem;
+  position: relative;
+  padding-left: 0.8rem;
+}
+
+.tips-grid span:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #6c757d;
+  font-weight: bold;
+}
+
+.tips-grid strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+.strategy-tips h5 {
+  margin: 0 0 1rem 0;
+  color: #856404;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.strategy-tips ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.strategy-tips li {
+  margin-bottom: 0.75rem;
+  color: #6c5ce7;
+  line-height: 1.4;
+}
+
+.strategy-tips li strong {
+  color: #2d3436;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .creative-strategy-workspace .strategy-workspace-main {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem;
+    height: auto;
+  }
+  
+  .creative-strategy-workspace .strategy-form-section,
+  .creative-strategy-workspace .ai-chat-section {
+    max-height: none;
+    height: auto;
+  }
+  
+  .creative-strategy-workspace .ai-chat-section {
+    min-height: 500px;
+  }
+}
+
+/* Better side-by-side layout for larger screens */
+@media (min-width: 1025px) {
+  .creative-strategy-workspace .strategy-workspace-main {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem;
+    height: 80vh;
+    min-height: 700px;
+  }
+  
+  .creative-strategy-workspace .strategy-form-section,
+  .creative-strategy-workspace .ai-chat-section {
+    max-height: 80vh;
+    height: 100%;
+  }
+}
+
 /* ========== PROJECT DASHBOARD STYLES ========== */
 
 .project-dashboard {
@@ -2940,4 +3422,247 @@
   .context-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ========== ARTICLES CONTEXT INDICATOR ========== */
+
+.articles-context-indicator {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.articles-available {
+  background: #e7f5e7;
+  border: 1px solid #b8e6b8;
+  color: #2d5d2d;
+}
+
+.articles-available .success-icon {
+  margin-right: 0.5rem;
+}
+
+.no-articles-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.no-articles-warning .warning-icon {
+  margin-right: 0.5rem;
+}
+
+.articles-error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.articles-error .error-icon {
+  margin-right: 0.5rem;
+}
+
+.loading-text {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.articles-available details summary {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: #495057;
+}
+
+.articles-available details summary:hover {
+  color: #2d5d2d;
+}
+
+/* ========== SATIRICAL CONTEXT SECTION ========== */
+
+.satirical-context-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.satirical-context-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.satirical-context-section p {
+  margin: 0 0 1rem 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.context-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.context-selector select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.context-description {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.context-preview h5 {
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.context-preview p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.context-principles ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+}
+
+.context-principles li {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: #495057;
+}
+
+.context-applied {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  color: #155724;
+}
+
+.context-applied .success-icon {
+  margin-right: 0.5rem;
+}
+
+.context-applied-indicator {
+  margin-top: 1rem;
+}
+
+/* ========== SATIRICAL LENS SECTION (Dashboard) ========== */
+
+.satirical-lens-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.satirical-lens-section h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.25rem;
+}
+
+.satirical-lens-section > p {
+  margin: 0 0 1rem 0;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.current-lens {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #155724;
+}
+
+.no-lens {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #856404;
+}
+
+.lens-icon {
+  font-size: 1.5rem;
+}
+
+.lens-info strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+.lens-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lens-selector select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.lens-description {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.lens-preview h4 {
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.lens-preview p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.lens-principles ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+}
+
+.lens-principles li {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: #495057;
 }

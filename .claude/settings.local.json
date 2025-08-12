@@ -15,7 +15,18 @@
       "Bash(npx:*)",
       "Bash(npm start)",
       "Bash(cp:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(timeout 8s npm start)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(findstr:*)",
+      "Bash(copy:*)",
+      "Bash(tsc:*)",
+      "Bash(if not exist distrendererstyles mkdir distrendererstyles)",
+      "Bash(git push:*)",
+      "Bash(rd:*)",
+      "Bash(timeout:*)",
+      "Bash(del nul)"
     ],
     "deny": []
   }

@@ -372,6 +372,62 @@ export class MockDatabaseService {
   }
 
   /**
+   * Update project satirical context
+   */
+  async updateProjectContext(projectId: string, contextType: string): Promise<APIResponse<Project>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const projectIndex = this.projects.findIndex(p => p.id === projectId);
+      
+      if (projectIndex === -1) {
+        return {
+          success: false,
+          error: 'Project not found',
+          timestamp: new Date()
+        };
+      }
+
+      // Import the satirical context service
+      const { SatiricalContextService } = await import('../services/satirical-context.js');
+      const contextData = SatiricalContextService.getContextByType(contextType as any);
+      
+      if (!contextData) {
+        return {
+          success: false,
+          error: 'Invalid satirical context type',
+          timestamp: new Date()
+        };
+      }
+
+      // Update the project with satirical context
+      this.projects[projectIndex] = {
+        ...this.projects[projectIndex],
+        satirical_context: contextData,
+        updated_at: new Date()
+      };
+
+      // Save to persistent storage
+      await this.saveData();
+
+      return {
+        success: true,
+        data: this.projects[projectIndex],
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to update project context:', error);
+      return {
+        success: false,
+        error: `Failed to update project context: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
    * Delete a project and all associated data
    */
   async deleteProject(id: string): Promise<APIResponse<void>> {
@@ -1085,6 +1141,61 @@ export class MockDatabaseService {
       return {
         success: false,
         error: `Failed to generate director notes: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Update project satirical format
+   */
+  async updateProjectFormat(projectId: string, formatType: string): Promise<APIResponse<Project>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+    
+    try {
+      const projectIndex = this.projects.findIndex(p => p.id === projectId);
+      
+      if (projectIndex === -1) {
+        return {
+          success: false,
+          error: 'Project not found',
+          timestamp: new Date()
+        };
+      }
+      
+      // Validate the format type
+      const validFormats = ['NEWS_PARODY', 'VOX_POP', 'MORNING_TV_INTERVIEW', 'MOCKUMENTARY', 'SOCIAL_MEDIA', 'SKETCH_COMEDY', 'SATIRICAL_ARTICLE', 'PANEL_SHOW', 'COMMERCIAL_PARODY', 'REALITY_TV_PARODY'];
+      if (!validFormats.includes(formatType)) {
+        return {
+          success: false,
+          error: 'Invalid satirical format type',
+          timestamp: new Date()
+        };
+      }
+      
+      // Update the project with satirical format
+      this.projects[projectIndex] = {
+        ...this.projects[projectIndex],
+        satirical_format: formatType as any,
+        updated_at: new Date()
+      };
+      
+      // Save to persistent storage
+      await this.saveData();
+      
+      return {
+        success: true,
+        data: this.projects[projectIndex],
+        timestamp: new Date()
+      };
+      
+    } catch (error) {
+      console.error('Failed to update project format:', error);
+      return {
+        success: false,
+        error: `Failed to update project format: ${error}`,
         timestamp: new Date()
       };
     }

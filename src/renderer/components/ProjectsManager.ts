@@ -282,6 +282,7 @@ This will be replaced with a proper details modal in Phase 1.2
           </div>
 
           <div class="project-tabs">
+            <button class="project-tab" data-tab="director">🎯 Project Director</button>
             <button class="project-tab active" data-tab="overview">Overview</button>
             <button class="project-tab" data-tab="articles">Articles</button>
             <button class="project-tab" data-tab="strategy">Creative Strategy</button>
@@ -289,7 +290,14 @@ This will be replaced with a proper details modal in Phase 1.2
             <button class="project-tab" data-tab="storyboard">Storyboard</button>
           </div>
 
-          <div class="tab-content active" id="overview-tab">
+          <div class="tab-content active" id="director-tab">
+            <div class="loading-text">
+              <span class="loading-spinner"></span>
+              Initializing Project Director...
+            </div>
+          </div>
+
+          <div class="tab-content" id="overview-tab">
             <!-- Dashboard will be loaded here -->
           </div>
 
@@ -335,7 +343,10 @@ This will be replaced with a proper details modal in Phase 1.2
         // Setup workspace event listeners
         this.setupWorkspaceEventListeners(project);
         
-        // Initialize dashboard
+        // Initialize Project Director by default (since it's the active tab)
+        this.initializeProjectDirector(projectId);
+        
+        // Initialize dashboard (for when user switches to overview tab)
         this.initializeDashboard(projectId);
         
         // Load articles for this project (but don't show them initially)
@@ -425,7 +436,10 @@ This will be replaced with a proper details modal in Phase 1.2
     const currentProjectId = this.getCurrentProjectId();
     
     // Handle tab-specific initialization
-    if (tabId === 'overview' && currentProjectId) {
+    if (tabId === 'director' && currentProjectId) {
+      // Initialize Project Director component
+      this.initializeProjectDirector(currentProjectId);
+    } else if (tabId === 'overview' && currentProjectId) {
       // Refresh dashboard data
       window.dispatchEvent(new CustomEvent('refreshDashboard'));
     } else if (tabId === 'strategy' && currentProjectId) {
@@ -443,6 +457,31 @@ This will be replaced with a proper details modal in Phase 1.2
     
     // We can get the project ID from the data attribute we'll add
     return projectWorkspace.getAttribute('data-project-id');
+  }
+
+  /**
+   * Initialize Project Director component
+   */
+  private async initializeProjectDirector(projectId: string): Promise<void> {
+    try {
+      const { projectDirectorDashboard } = await import('./ProjectDirectorDashboard.js');
+      await projectDirectorDashboard.initialize(projectId);
+    } catch (error) {
+      console.error('Failed to initialize Project Director:', error);
+      const directorTab = document.getElementById('director-tab');
+      if (directorTab) {
+        directorTab.innerHTML = `
+          <div class="director-error">
+            <div class="error-icon">❌</div>
+            <h3>Project Director Error</h3>
+            <p>Failed to load Project Director component</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
   }
 
   /**
