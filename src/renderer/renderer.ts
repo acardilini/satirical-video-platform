@@ -220,9 +220,13 @@ async function updateAgentStatuses() {
         const validation = validationResults.success ? validationResults.data[persona] : null;
         
         if (validation) {
-          if (validation.isValid) {
+          if (validation.isConfigured && validation.isValid) {
             statusSpan.textContent = 'Ready';
             statusSpan.className = 'agent-status configured';
+          } else if (validation.isConfigured && !validation.isValid) {
+            statusSpan.textContent = 'Configured (API key needed)';
+            statusSpan.className = 'agent-status configured-needs-api';
+            statusSpan.title = validation.issues.join(', ');
           } else if (validation.needsAttention) {
             statusSpan.textContent = 'Needs attention';
             statusSpan.className = 'agent-status needs-attention';

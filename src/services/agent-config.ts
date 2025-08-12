@@ -301,6 +301,7 @@ export class AgentConfigService {
    */
   public static async validateAgentConfig(persona: PersonaType): Promise<{
     isValid: boolean;
+    isConfigured: boolean;
     issues: string[];
     suggestions: { action: string; description: string; data?: any }[];
   }> {
@@ -313,6 +314,7 @@ export class AgentConfigService {
       if (!config) {
         return {
           isValid: false,
+          isConfigured: false,
           issues: ['No configuration found for this agent'],
           suggestions: [{
             action: 'configure',
@@ -321,7 +323,10 @@ export class AgentConfigService {
         };
       }
 
-      // Check if API key is available
+      // Agent is configured if it has provider and model
+      const isConfigured = !!(config.provider && config.model);
+
+      // Check if API key is available (this affects runtime validity, not configuration)
       const apiKey = this.getGlobalAPIKey(config.provider);
       if (!apiKey && config.provider !== 'local') {
         issues.push(`No API key found for ${config.provider}`);
@@ -360,6 +365,7 @@ export class AgentConfigService {
 
       return {
         isValid: issues.length === 0,
+        isConfigured,
         issues,
         suggestions
       };
@@ -367,6 +373,7 @@ export class AgentConfigService {
     } catch (error) {
       return {
         isValid: false,
+        isConfigured: false,
         issues: [`Error validating configuration: ${error}`],
         suggestions: [{
           action: 'reconfigure',
@@ -426,6 +433,7 @@ export class AgentConfigService {
     [key: string]: {
       persona: PersonaType;
       isValid: boolean;
+      isConfigured: boolean;
       issues: string[];
       needsAttention: boolean;
     }
@@ -447,8 +455,10 @@ export class AgentConfigService {
       results[persona] = {
         persona,
         isValid: validation.isValid,
+        isConfigured: validation.isConfigured,
         issues: validation.issues,
-        needsAttention: !validation.isValid || validation.suggestions.some(s => s.action === 'update-model')
+        // Only needs attention if not configured OR has critical model issues
+        needsAttention: !validation.isConfigured || validation.suggestions.some(s => s.action === 'update-model')
       };
     }
 

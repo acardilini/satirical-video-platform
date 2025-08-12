@@ -619,6 +619,11 @@
   color: #10b981;
 }
 
+.agent-status.configured-needs-api {
+  color: #3b82f6;
+  cursor: help;
+}
+
 .agent-status.needs-attention {
   color: #f59e0b;
   cursor: help;
