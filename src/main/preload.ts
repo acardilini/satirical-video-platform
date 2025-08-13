@@ -46,6 +46,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createDirectorNotes: (notesData: any) => ipcRenderer.invoke('db-create-director-notes', notesData),
     getDirectorNotes: (projectId: string) => ipcRenderer.invoke('db-get-director-notes', projectId),
     updateDirectorNotes: (id: string, data: any) => ipcRenderer.invoke('db-update-director-notes', id, data),
+
+    // Script operations
+    createScript: (scriptData: any) => ipcRenderer.invoke('db-create-script', scriptData),
+    getScriptById: (scriptId: string) => ipcRenderer.invoke('db-get-script-by-id', scriptId),
+    getScriptsByProject: (projectId: string) => ipcRenderer.invoke('db-get-scripts-by-project', projectId),
+    updateScript: (scriptId: string, updates: any) => ipcRenderer.invoke('db-update-script', scriptId, updates),
+    deleteScript: (scriptId: string) => ipcRenderer.invoke('db-delete-script', scriptId),
+
+    // Storyboard and Shot operations
+    saveStoryboard: (projectId: string, storyboard: any) => ipcRenderer.invoke('database-saveStoryboard', projectId, storyboard),
+    getStoryboard: (projectId: string) => ipcRenderer.invoke('database-getStoryboard', projectId),
+    saveShots: (projectId: string, shots: any[]) => ipcRenderer.invoke('database-saveShots', projectId, shots),
+    getShots: (projectId: string) => ipcRenderer.invoke('database-getShots', projectId),
+    saveSoundNotes: (projectId: string, soundNotes: any[]) => ipcRenderer.invoke('database-saveSoundNotes', projectId, soundNotes),
+    getSoundNotes: (projectId: string) => ipcRenderer.invoke('database-getSoundNotes', projectId),
+    getSoundNotesForShot: (shotId: string) => ipcRenderer.invoke('database-getSoundNotesForShot', shotId),
   },
 
   // LLM operations

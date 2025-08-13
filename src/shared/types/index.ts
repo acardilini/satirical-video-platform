@@ -148,6 +148,19 @@ export interface Script {
   updated_at?: Date;
 }
 
+export interface Storyboard {
+  id: string;
+  project_id: string;
+  script_id: string;
+  visual_concept?: string;
+  shots: Shot[];
+  status: 'DRAFT' | 'IN_REVIEW' | 'APPROVED';
+  version: number;
+  created_by: string;
+  created_at: Date;
+  updated_at?: Date;
+}
+
 export interface Shot {
   id: string;
   script_id: string;

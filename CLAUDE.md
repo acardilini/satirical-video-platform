@@ -154,3 +154,4 @@ User ↔ Persona Agent (LLM) ↔ Structured Output ↔ Database
 - `/docs/project_plan/Desktop App Project Plan - Satirical Video Production Platform.md` - Implementation roadmap
 - `/docs/prd/personas_detailed/` - Detailed persona specifications
 - `/docs/LLM_Integration_Requirements.md` - **CRITICAL**: LLM integration architecture for persona AI agents
+- When changes are being made to the CSS the build process isn't being properly copied to the dist folder. This means that I'm often spending time to make this point every time there is a change or fix. Please make sure this is checked when updating CSS.

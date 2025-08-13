@@ -29,6 +29,7 @@ async function initializeComponents() {
     await import('./components/NewsArticleUpload.js').catch(console.error);
     await import('./components/ProjectDashboard.js').catch(console.error);
     await import('./components/CreativeStrategy.js').catch(console.error);
+    await import('./components/ScriptDevelopment.js').catch(console.error);
     await import('./components/ProjectDirectorDashboard.js').catch(console.error);
     
     // Import settings components
@@ -209,17 +210,26 @@ async function updateAgentStatuses() {
     
     const agentItems = document.querySelectorAll('.agent-setting-item');
     
-    // Get validation results for all agents
-    const validationResults = await window.electronAPI.agents.validateAll();
+    // Since localStorage is only available in renderer, do validation here instead of main process
+    const personas = [
+      'CREATIVE_STRATEGIST',
+      'BAFFLING_BROADCASTER', 
+      'SATIRICAL_SCREENWRITER',
+      'CINEMATIC_STORYBOARDER',
+      'SOUNDSCAPE_ARCHITECT',
+      'VIDEO_PROMPT_ENGINEER',
+      'PROJECT_DIRECTOR'
+    ];
     
-    agentItems.forEach(item => {
+    for (const item of Array.from(agentItems)) {
       const persona = (item as HTMLElement).dataset.persona;
       const statusSpan = item.querySelector('.agent-status') as HTMLElement;
       
-      if (persona && statusSpan) {
-        const validation = validationResults.success ? validationResults.data[persona] : null;
-        
-        if (validation) {
+      if (persona && statusSpan && personas.includes(persona as any)) {
+        try {
+          // Do validation directly in renderer process where localStorage is available
+          const validation = await AgentConfigService.validateAgentConfig(persona as any);
+          
           if (validation.isConfigured && validation.isValid) {
             statusSpan.textContent = 'Ready';
             statusSpan.className = 'agent-status configured';
@@ -227,28 +237,18 @@ async function updateAgentStatuses() {
             statusSpan.textContent = 'Configured (API key needed)';
             statusSpan.className = 'agent-status configured-needs-api';
             statusSpan.title = validation.issues.join(', ');
-          } else if (validation.needsAttention) {
+          } else {
             statusSpan.textContent = 'Needs attention';
             statusSpan.className = 'agent-status needs-attention';
             statusSpan.title = validation.issues.join(', ');
-          } else {
-            statusSpan.textContent = 'Not configured';
-            statusSpan.className = 'agent-status not-configured';
           }
-        } else {
-          // Fallback to old method if validation fails
-          const isConfigured = AgentConfigService.isAgentConfigured(persona as any);
-          
-          if (isConfigured) {
-            statusSpan.textContent = 'Configured';
-            statusSpan.className = 'agent-status configured';
-          } else {
-            statusSpan.textContent = 'Not configured';
-            statusSpan.className = 'agent-status not-configured';
-          }
+        } catch (error) {
+          console.error(`Error validating ${persona}:`, error);
+          statusSpan.textContent = 'Error';
+          statusSpan.className = 'agent-status needs-attention';
         }
       }
-    });
+    }
   } catch (error) {
     console.error('Failed to update agent statuses:', error);
   }

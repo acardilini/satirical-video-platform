@@ -18,9 +18,26 @@ export interface ElectronAPI {
     getNewsArticlesByProject: (projectId: string) => Promise<any>;
     getNewsArticle: (id: string) => Promise<any>;
     deleteNewsArticle: (id: string) => Promise<any>;
+    createCreativeStrategy: (strategyData: any) => Promise<any>;
+    getCreativeStrategy: (projectId: string) => Promise<any>;
+    updateCreativeStrategy: (id: string, updates: any) => Promise<any>;
+    generateCreativeStrategy: (projectId: string) => Promise<any>;
+    generateDirectorNotes: (strategyId: string) => Promise<any>;
     createDirectorNotes: (notesData: any) => Promise<any>;
     getDirectorNotes: (projectId: string) => Promise<any>;
     updateDirectorNotes: (id: string, data: any) => Promise<any>;
+    createScript: (scriptData: any) => Promise<any>;
+    getScriptById: (scriptId: string) => Promise<any>;
+    getScriptsByProject: (projectId: string) => Promise<any>;
+    updateScript: (scriptId: string, updates: any) => Promise<any>;
+    deleteScript: (scriptId: string) => Promise<any>;
+    saveStoryboard: (projectId: string, storyboard: any) => Promise<any>;
+    getStoryboard: (projectId: string) => Promise<any>;
+    saveShots: (projectId: string, shots: any[]) => Promise<any>;
+    getShots: (projectId: string) => Promise<any>;
+    saveSoundNotes: (projectId: string, soundNotes: any[]) => Promise<any>;
+    getSoundNotes: (projectId: string) => Promise<any>;
+    getSoundNotesForShot: (shotId: string) => Promise<any>;
   };
   
   llm: {

@@ -275,10 +275,10 @@ export class ProjectDashboard {
               <div class="action-description">Develop creative direction</div>
             </button>
             
-            <button class="quick-action-btn disabled" data-action="develop-script">
+            <button class="quick-action-btn" data-action="develop-script">
               <div class="action-icon">📝</div>
               <div class="action-title">Develop Script</div>
-              <div class="action-description">Generate satirical content (Module 3)</div>
+              <div class="action-description">Write your satirical script</div>
             </button>
             
             <button class="quick-action-btn disabled" data-action="create-storyboard">
@@ -342,20 +342,26 @@ export class ProjectDashboard {
    * Render phase checklist
    */
   private async renderPhaseChecklist(): Promise<string> {
-    // Check if creative strategy exists
+    // Check if creative strategy and script exist
     let hasCreativeStrategy = false;
+    let hasScript = false;
+    
     try {
       // @ts-ignore
       const strategyResult = await window.electronAPI.database.getCreativeStrategy(this.currentProject!.id);
       hasCreativeStrategy = strategyResult.success;
+      
+      // @ts-ignore
+      const scriptResult = await window.electronAPI.database.getScriptsByProject(this.currentProject!.id);
+      hasScript = scriptResult.success && scriptResult.data && scriptResult.data.length > 0;
     } catch (error) {
-      console.error('Failed to check creative strategy:', error);
+      console.error('Failed to check project phases:', error);
     }
 
     const phases = [
       { id: 'articles', name: 'News Article Ingestion', completed: this.projectStats!.totalArticles > 0 },
       { id: 'strategy', name: 'Creative Strategy', completed: hasCreativeStrategy },
-      { id: 'script', name: 'Script Development', completed: false },
+      { id: 'script', name: 'Script Development', completed: hasScript },
       { id: 'storyboard', name: 'Visual Storyboard', completed: false },
       { id: 'sound', name: 'Sound Design', completed: false },
       { id: 'shots', name: 'Shot Brief Generation', completed: false },
@@ -954,7 +960,7 @@ export class ProjectDashboard {
         this.switchToStrategyTab();
         break;
       case 'develop-script':
-        alert('Script Development module will be available in Module 3');
+        this.switchToScriptTab();
         break;
       case 'create-storyboard':
         alert('Visual Storyboard module will be available in Module 4');
@@ -992,6 +998,58 @@ export class ProjectDashboard {
     const strategyTab = document.querySelector('[data-tab="strategy"]') as HTMLElement;
     if (strategyTab) {
       strategyTab.click();
+    }
+  }
+
+  /**
+   * Switch to script development tab
+   */
+  private switchToScriptTab(): void {
+    const scriptTab = document.querySelector('[data-tab="script"]') as HTMLElement;
+    if (scriptTab) {
+      scriptTab.click();
+    } else {
+      // If no script tab exists, initialize script development in current container
+      this.initializeScriptDevelopment();
+    }
+  }
+
+  /**
+   * Initialize script development component
+   */
+  private async initializeScriptDevelopment(): Promise<void> {
+    try {
+      if (!this.currentProject) {
+        alert('No project selected');
+        return;
+      }
+
+      // Create script development container if it doesn't exist
+      let container = document.getElementById('script-development-container');
+      if (!container) {
+        // Find the main project content area or create one
+        const projectContentArea = document.querySelector('.project-content') || document.querySelector('.content');
+        if (projectContentArea) {
+          // Hide other content and show script development
+          Array.from(projectContentArea.children).forEach(child => {
+            (child as HTMLElement).style.display = 'none';
+          });
+
+          container = document.createElement('div');
+          container.id = 'script-development-container';
+          container.style.display = 'block';
+          projectContentArea.appendChild(container);
+        }
+      }
+
+      if (container) {
+        // Import and initialize script development component
+        const { scriptDevelopment } = await import('./ScriptDevelopment.js');
+        await scriptDevelopment.initialize(this.currentProject.id);
+      }
+    } catch (error) {
+      console.error('Failed to initialize script development:', error);
+      alert('Failed to load Script Development. Please check console for errors.');
     }
   }
 

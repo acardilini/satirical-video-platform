@@ -7,7 +7,10 @@ import {
   NewsArticle, 
   DirectorNotes,
   CreativeStrategy,
-  Script, 
+  Script,
+  Storyboard,
+  Shot,
+  SoundNotes,
   Conversation,
   Message,
   APIResponse 
@@ -27,6 +30,9 @@ export class MockDatabaseService {
   private creativeStrategies: CreativeStrategy[] = [];
   private directorNotes: DirectorNotes[] = [];
   private scripts: Script[] = [];
+  private storyboards: Storyboard[] = [];
+  private shots: Shot[] = [];
+  private soundNotes: SoundNotes[] = [];
   private conversations: Conversation[] = [];
   private messages: Message[] = [];
   private initialized = false;
@@ -116,7 +122,30 @@ export class MockDatabaseService {
           updated_at: notes.updated_at ? new Date(notes.updated_at) : undefined
         }));
         
-        this.scripts = data.scripts || [];
+        this.scripts = (data.scripts || []).map((script: any) => ({
+          ...script,
+          created_at: new Date(script.created_at),
+          updated_at: script.updated_at ? new Date(script.updated_at) : undefined
+        }));
+        
+        this.storyboards = (data.storyboards || []).map((storyboard: any) => ({
+          ...storyboard,
+          created_at: new Date(storyboard.created_at),
+          updated_at: storyboard.updated_at ? new Date(storyboard.updated_at) : undefined
+        }));
+        
+        this.shots = (data.shots || []).map((shot: any) => ({
+          ...shot,
+          created_at: new Date(shot.created_at),
+          updated_at: shot.updated_at ? new Date(shot.updated_at) : undefined
+        }));
+        
+        this.soundNotes = (data.soundNotes || []).map((soundNote: any) => ({
+          ...soundNote,
+          created_at: new Date(soundNote.created_at),
+          updated_at: soundNote.updated_at ? new Date(soundNote.updated_at) : undefined
+        }));
+        
         this.conversations = data.conversations || [];
         this.messages = data.messages || [];
         
@@ -142,6 +171,9 @@ export class MockDatabaseService {
         creativeStrategies: this.creativeStrategies,
         directorNotes: this.directorNotes,
         scripts: this.scripts,
+        storyboards: this.storyboards,
+        shots: this.shots,
+        soundNotes: this.soundNotes,
         conversations: this.conversations,
         messages: this.messages,
         lastSaved: new Date().toISOString()
@@ -1201,6 +1233,433 @@ export class MockDatabaseService {
     }
   }
 
+  // ========== SCRIPT MANAGEMENT ==========
+
+  /**
+   * Create a new script
+   */
+  async createScript(scriptData: Omit<Script, 'id' | 'created_at' | 'updated_at'>): Promise<APIResponse<Script>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const script: Script = {
+        id: generateId(),
+        ...scriptData,
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+
+      this.scripts.push(script);
+      await this.saveData();
+
+      return {
+        success: true,
+        data: script,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to create script:', error);
+      return {
+        success: false,
+        error: `Failed to create script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get script by ID
+   */
+  async getScriptById(scriptId: string): Promise<APIResponse<Script>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const script = this.scripts.find(s => s.id === scriptId);
+      
+      if (!script) {
+        return {
+          success: false,
+          error: 'Script not found',
+          timestamp: new Date()
+        };
+      }
+
+      return {
+        success: true,
+        data: script,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get script:', error);
+      return {
+        success: false,
+        error: `Failed to get script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get scripts by project ID
+   */
+  async getScriptsByProject(projectId: string): Promise<APIResponse<Script[]>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const scripts = this.scripts.filter(s => s.project_id === projectId);
+      
+      return {
+        success: true,
+        data: scripts,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get scripts by project:', error);
+      return {
+        success: false,
+        error: `Failed to get scripts: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Update script
+   */
+  async updateScript(scriptId: string, updates: Partial<Omit<Script, 'id' | 'created_at'>>): Promise<APIResponse<Script>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const index = this.scripts.findIndex(s => s.id === scriptId);
+      
+      if (index === -1) {
+        return {
+          success: false,
+          error: 'Script not found',
+          timestamp: new Date()
+        };
+      }
+
+      const updatedScript: Script = {
+        ...this.scripts[index],
+        ...updates,
+        updated_at: new Date()
+      };
+
+      this.scripts[index] = updatedScript;
+      await this.saveData();
+
+      return {
+        success: true,
+        data: updatedScript,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to update script:', error);
+      return {
+        success: false,
+        error: `Failed to update script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Delete script
+   */
+  async deleteScript(scriptId: string): Promise<APIResponse<boolean>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const index = this.scripts.findIndex(s => s.id === scriptId);
+      
+      if (index === -1) {
+        return {
+          success: false,
+          error: 'Script not found',
+          timestamp: new Date()
+        };
+      }
+
+      this.scripts.splice(index, 1);
+      await this.saveData();
+
+      return {
+        success: true,
+        data: true,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to delete script:', error);
+      return {
+        success: false,
+        error: `Failed to delete script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Create or update storyboard
+   */
+  async saveStoryboard(projectId: string, storyboard: Partial<Storyboard>): Promise<APIResponse<Storyboard>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const existingIndex = this.storyboards.findIndex(s => s.project_id === projectId);
+      
+      if (existingIndex !== -1) {
+        // Update existing storyboard
+        this.storyboards[existingIndex] = {
+          ...this.storyboards[existingIndex],
+          ...storyboard,
+          updated_at: new Date()
+        };
+        await this.saveData();
+        return {
+          success: true,
+          data: this.storyboards[existingIndex],
+          timestamp: new Date()
+        };
+      } else {
+        // Create new storyboard
+        const newStoryboard: Storyboard = {
+          id: generateId(),
+          project_id: projectId,
+          script_id: storyboard.script_id || '',
+          visual_concept: storyboard.visual_concept || '',
+          shots: [],
+          status: 'DRAFT',
+          version: 1,
+          created_by: storyboard.created_by || 'temp-user-id',
+          created_at: new Date(),
+          updated_at: new Date(),
+          ...storyboard
+        };
+        
+        this.storyboards.push(newStoryboard);
+        await this.saveData();
+        return {
+          success: true,
+          data: newStoryboard,
+          timestamp: new Date()
+        };
+      }
+    } catch (error) {
+      console.error('Failed to save storyboard:', error);
+      return {
+        success: false,
+        error: `Failed to save storyboard: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get storyboard by project ID
+   */
+  async getStoryboard(projectId: string): Promise<APIResponse<Storyboard | null>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const storyboard = this.storyboards.find(s => s.project_id === projectId);
+      return {
+        success: true,
+        data: storyboard || null,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get storyboard:', error);
+      return {
+        success: false,
+        error: `Failed to get storyboard: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Save shots for a project
+   */
+  async saveShots(projectId: string, shots: Shot[]): Promise<APIResponse<Shot[]>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // Remove existing shots for this project (check both script_id and by project association)
+      this.shots = this.shots.filter(s => {
+        // Remove if script_id matches projectId OR if we can find a script that belongs to this project
+        if (s.script_id === projectId) return false;
+        
+        // Also check if the shot belongs to any script of this project
+        const projectScripts = this.scripts.filter(script => script.project_id === projectId);
+        return !projectScripts.some(script => script.id === s.script_id);
+      });
+      
+      // Add new shots
+      const savedShots = shots.map(shot => ({
+        ...shot,
+        updated_at: new Date()
+      }));
+      
+      this.shots.push(...savedShots);
+      await this.saveData();
+      
+      return {
+        success: true,
+        data: savedShots,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to save shots:', error);
+      return {
+        success: false,
+        error: `Failed to save shots: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get shots by project ID
+   */
+  async getShots(projectId: string): Promise<APIResponse<Shot[]>> {
+    if (!this.initialized) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // Get shots by checking if script_id matches projectId OR if script belongs to project
+      const projectScripts = this.scripts.filter(script => script.project_id === projectId);
+      const scriptIds = projectScripts.map(script => script.id);
+      scriptIds.push(projectId); // Also include direct projectId matches
+      
+      const shots = this.shots.filter(s => scriptIds.includes(s.script_id));
+      return {
+        success: true,
+        data: shots,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get shots:', error);
+      return {
+        success: false,
+        error: `Failed to get shots: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Save sound notes for a project
+   */
+  async saveSoundNotes(projectId: string, soundNotes: SoundNotes[]): Promise<APIResponse<SoundNotes[]>> {
+    try {
+      if (!this.initialized) {
+        throw new Error('Database not initialized');
+      }
+
+      // Remove existing sound notes for this project
+      this.soundNotes = this.soundNotes.filter(note => {
+        const shot = this.shots.find(s => s.id === note.shot_id);
+        return !shot || shot.script_id !== projectId;
+      });
+
+      // Add new sound notes
+      this.soundNotes.push(...soundNotes);
+
+      await this.saveData();
+
+      return {
+        success: true,
+        data: soundNotes,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to save sound notes:', error);
+      return {
+        success: false,
+        error: `Failed to save sound notes: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get sound notes for a project
+   */
+  async getSoundNotes(projectId: string): Promise<APIResponse<SoundNotes[]>> {
+    try {
+      if (!this.initialized) {
+        throw new Error('Database not initialized');
+      }
+
+      // Get shots for this project first
+      const projectShots = this.shots.filter(shot => {
+        // Find the script that belongs to this project
+        const script = this.scripts.find(s => s.id === shot.script_id && s.project_id === projectId);
+        return !!script;
+      });
+
+      const shotIds = projectShots.map(shot => shot.id);
+      const soundNotes = this.soundNotes.filter(note => shotIds.includes(note.shot_id));
+
+      return {
+        success: true,
+        data: soundNotes,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get sound notes:', error);
+      return {
+        success: false,
+        error: `Failed to get sound notes: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get sound notes for a specific shot
+   */
+  async getSoundNotesForShot(shotId: string): Promise<APIResponse<SoundNotes | null>> {
+    try {
+      if (!this.initialized) {
+        throw new Error('Database not initialized');
+      }
+
+      const soundNote = this.soundNotes.find(note => note.shot_id === shotId);
+
+      return {
+        success: true,
+        data: soundNote || null,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Failed to get sound notes for shot:', error);
+      return {
+        success: false,
+        error: `Failed to get sound notes for shot: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  }
+
   /**
    * Get database statistics for testing
    */
@@ -1210,6 +1669,10 @@ export class MockDatabaseService {
       projects: this.projects.length,
       newsArticles: this.newsArticles.length,
       creativeStrategies: this.creativeStrategies.length,
+      scripts: this.scripts.length,
+      storyboards: this.storyboards.length,
+      shots: this.shots.length,
+      soundNotes: this.soundNotes.length,
       conversations: this.conversations.length,
       messages: this.messages.length,
       initialized: this.initialized

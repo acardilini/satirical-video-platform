@@ -24,13 +24,11 @@ export class AgentConfigService {
       const configs = this.loadStoredConfigs();
       const config = configs[persona];
       
-      console.log(`DEBUG: getAgentConfig for ${persona}:`, config);
       
       if (!config) return null;
 
       // Get API key from global settings
       const apiKey = this.getGlobalAPIKey(config.provider);
-      console.log(`DEBUG: API key for ${config.provider}:`, apiKey ? '[PRESENT]' : '[MISSING]');
       
       return {
         persona,
@@ -52,7 +50,6 @@ export class AgentConfigService {
     try {
       // Check if localStorage is available (renderer process only)
       if (typeof localStorage === 'undefined') {
-        console.log('DEBUG: localStorage not available in main process, cannot save config');
         return;
       }
       
@@ -112,8 +109,7 @@ export class AgentConfigService {
     try {
       // Check if localStorage is available (renderer process only)
       if (typeof localStorage === 'undefined') {
-        console.log('DEBUG: localStorage not available in main process, cannot get default config');
-        return null;
+          return null;
       }
       
       const globalSettings = localStorage.getItem('llm-settings');
@@ -169,13 +165,11 @@ export class AgentConfigService {
     try {
       // Check if localStorage is available (renderer process only)
       if (typeof localStorage === 'undefined') {
-        console.log('DEBUG: localStorage not available in main process, returning empty configs');
         return {};
       }
       
       const stored = localStorage.getItem(this.STORAGE_KEY);
       const configs = stored ? JSON.parse(stored) : {};
-      console.log('DEBUG: loadStoredConfigs:', configs);
       return configs;
     } catch (error) {
       console.error('Failed to parse stored agent configs:', error);
@@ -190,17 +184,14 @@ export class AgentConfigService {
     try {
       // Check if localStorage is available (renderer process only)
       if (typeof localStorage === 'undefined') {
-        console.log('DEBUG: localStorage not available in main process, cannot get API key');
         return null;
       }
       
       const globalSettings = localStorage.getItem('global-api-settings');
-      console.log('DEBUG: globalSettings raw:', globalSettings);
       
       if (!globalSettings) return null;
       
       const settings = JSON.parse(globalSettings);
-      console.log('DEBUG: parsed settings:', settings);
       
       switch (provider) {
         case 'openai': return settings.openai_api_key || null;

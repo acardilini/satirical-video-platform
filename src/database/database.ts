@@ -8,6 +8,7 @@ import {
   NewsArticle, 
   CreativeStrategy,
   DirectorNotes, 
+  Script,
   Conversation,
   Message,
   APIResponse 
@@ -433,6 +434,96 @@ Generate a creative, witty strategy that transforms these news articles into com
    */
   async getConversationMessages(conversationId: string): Promise<APIResponse<Message[]>> {
     return await mockDatabaseService.getConversationMessages(conversationId);
+  }
+
+  // ========== SCRIPT OPERATIONS ==========
+
+  /**
+   * Create a new script
+   */
+  async createScript(scriptData: Omit<Script, 'id' | 'created_at' | 'updated_at'>): Promise<APIResponse<Script>> {
+    return await mockDatabaseService.createScript(scriptData);
+  }
+
+  /**
+   * Get script by ID
+   */
+  async getScriptById(scriptId: string): Promise<APIResponse<Script>> {
+    return await mockDatabaseService.getScriptById(scriptId);
+  }
+
+  /**
+   * Get scripts by project ID
+   */
+  async getScriptsByProject(projectId: string): Promise<APIResponse<Script[]>> {
+    return await mockDatabaseService.getScriptsByProject(projectId);
+  }
+
+  /**
+   * Update script
+   */
+  async updateScript(scriptId: string, updates: Partial<Omit<Script, 'id' | 'created_at'>>): Promise<APIResponse<Script>> {
+    return await mockDatabaseService.updateScript(scriptId, updates);
+  }
+
+  /**
+   * Delete script
+   */
+  async deleteScript(scriptId: string): Promise<APIResponse<boolean>> {
+    return await mockDatabaseService.deleteScript(scriptId);
+  }
+
+  // ========== STORYBOARD AND SHOT METHODS ==========
+
+  /**
+   * Save storyboard
+   */
+  async saveStoryboard(projectId: string, storyboard: any): Promise<APIResponse<any>> {
+    return await mockDatabaseService.saveStoryboard(projectId, storyboard);
+  }
+
+  /**
+   * Get storyboard
+   */
+  async getStoryboard(projectId: string): Promise<APIResponse<any>> {
+    return await mockDatabaseService.getStoryboard(projectId);
+  }
+
+  /**
+   * Save shots
+   */
+  async saveShots(projectId: string, shots: any[]): Promise<APIResponse<any[]>> {
+    return await mockDatabaseService.saveShots(projectId, shots);
+  }
+
+  /**
+   * Get shots
+   */
+  async getShots(projectId: string): Promise<APIResponse<any[]>> {
+    return await mockDatabaseService.getShots(projectId);
+  }
+
+  // ========== SOUND NOTES METHODS ==========
+
+  /**
+   * Save sound notes
+   */
+  async saveSoundNotes(projectId: string, soundNotes: any[]): Promise<APIResponse<any[]>> {
+    return await mockDatabaseService.saveSoundNotes(projectId, soundNotes);
+  }
+
+  /**
+   * Get sound notes
+   */
+  async getSoundNotes(projectId: string): Promise<APIResponse<any[]>> {
+    return await mockDatabaseService.getSoundNotes(projectId);
+  }
+
+  /**
+   * Get sound notes for shot
+   */
+  async getSoundNotesForShot(shotId: string): Promise<APIResponse<any>> {
+    return await mockDatabaseService.getSoundNotesForShot(shotId);
   }
 }
 

@@ -27,7 +27,8 @@
       "Bash(rd:*)",
       "Bash(timeout:*)",
       "Bash(del nul)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(electron:*)"
     ],
     "deny": []
   }

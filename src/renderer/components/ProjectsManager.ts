@@ -288,6 +288,7 @@ This will be replaced with a proper details modal in Phase 1.2
             <button class="project-tab" data-tab="strategy">Creative Strategy</button>
             <button class="project-tab" data-tab="script">Script</button>
             <button class="project-tab" data-tab="storyboard">Storyboard</button>
+            <button class="project-tab" data-tab="sound">🎵 Sound Design</button>
           </div>
 
           <div class="tab-content" id="director-tab">
@@ -318,18 +319,29 @@ This will be replaced with a proper details modal in Phase 1.2
           </div>
 
           <div class="tab-content" id="script-tab">
-            <div class="empty-state">
-              <div class="empty-state-icon">📝</div>
-              <h3>Script Development</h3>
-              <p>Script development will be implemented in Module 3.</p>
+            <div id="script-development-container">
+              <div class="loading-text">
+                <span class="loading-spinner"></span>
+                Loading script development...
+              </div>
             </div>
           </div>
 
           <div class="tab-content" id="storyboard-tab">
-            <div class="empty-state">
-              <div class="empty-state-icon">🎬</div>
-              <h3>Visual Storyboard</h3>
-              <p>Visual design and storyboarding will be implemented in Module 4.</p>
+            <div id="storyboard-development-container">
+              <div class="loading-text">
+                <span class="loading-spinner"></span>
+                Loading storyboard development...
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" id="sound-tab">
+            <div id="soundscape-architect-container">
+              <div class="loading-text">
+                <span class="loading-spinner"></span>
+                Loading sound design...
+              </div>
             </div>
           </div>
         </div>
@@ -445,6 +457,15 @@ This will be replaced with a proper details modal in Phase 1.2
     } else if (tabId === 'strategy' && currentProjectId) {
       // Initialize Creative Strategy component
       this.initializeCreativeStrategy(currentProjectId);
+    } else if (tabId === 'script' && currentProjectId) {
+      // Initialize Script Development component
+      this.initializeScriptDevelopment(currentProjectId);
+    } else if (tabId === 'storyboard' && currentProjectId) {
+      // Initialize Storyboard Development component
+      this.initializeStoryboardDevelopment(currentProjectId);
+    } else if (tabId === 'sound' && currentProjectId) {
+      // Initialize Soundscape Architect component
+      this.initializeSoundscapeArchitect(currentProjectId);
     }
   }
 
@@ -500,6 +521,81 @@ This will be replaced with a proper details modal in Phase 1.2
             <div class="error-icon">❌</div>
             <h3>Creative Strategy Error</h3>
             <p>Failed to load Creative Strategy component</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  /**
+   * Initialize Script Development component
+   */
+  private async initializeScriptDevelopment(projectId: string): Promise<void> {
+    try {
+      const { scriptDevelopment } = await import('./ScriptDevelopment.js');
+      await scriptDevelopment.initialize(projectId);
+    } catch (error) {
+      console.error('Failed to initialize Script Development:', error);
+      const scriptTab = document.getElementById('script-tab');
+      if (scriptTab) {
+        scriptTab.innerHTML = `
+          <div class="script-error">
+            <div class="error-icon">❌</div>
+            <h3>Script Development Error</h3>
+            <p>Failed to load Script Development component</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  /**
+   * Initialize Storyboard Development component
+   */
+  private async initializeStoryboardDevelopment(projectId: string): Promise<void> {
+    try {
+      const { storyboardDevelopment } = await import('./StoryboardDevelopment.js');
+      await storyboardDevelopment.initialize(projectId);
+    } catch (error) {
+      console.error('Failed to initialize Storyboard Development:', error);
+      const storyboardTab = document.getElementById('storyboard-tab');
+      if (storyboardTab) {
+        storyboardTab.innerHTML = `
+          <div class="storyboard-error">
+            <div class="error-icon">❌</div>
+            <h3>Storyboard Development Error</h3>
+            <p>Failed to load Storyboard Development component</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  /**
+   * Initialize Soundscape Architect component
+   */
+  private async initializeSoundscapeArchitect(projectId: string): Promise<void> {
+    try {
+      const { soundscapeArchitect } = await import('./SoundscapeArchitect.js');
+      await soundscapeArchitect.initialize(projectId);
+    } catch (error) {
+      console.error('Failed to initialize Soundscape Architect:', error);
+      const soundTab = document.getElementById('sound-tab');
+      if (soundTab) {
+        soundTab.innerHTML = `
+          <div class="soundscape-error">
+            <div class="error-icon">❌</div>
+            <h3>Sound Design Error</h3>
+            <p>Failed to load Soundscape Architect component</p>
             <button class="btn btn-primary" onclick="location.reload()">
               Retry
             </button>

@@ -445,6 +445,73 @@ export function setupIPCHandlers() {
     }
   });
 
+  // ========== SCRIPT HANDLERS ==========
+
+  ipcMain.handle('db-create-script', async (event, scriptData) => {
+    try {
+      return await databaseService.createScript(scriptData);
+    } catch (error) {
+      console.error('Create script IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to create script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-get-script-by-id', async (event, scriptId) => {
+    try {
+      return await databaseService.getScriptById(scriptId);
+    } catch (error) {
+      console.error('Get script by ID IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to get script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-get-scripts-by-project', async (event, projectId) => {
+    try {
+      return await databaseService.getScriptsByProject(projectId);
+    } catch (error) {
+      console.error('Get scripts by project IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to get scripts: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-update-script', async (event, scriptId, updates) => {
+    try {
+      return await databaseService.updateScript(scriptId, updates);
+    } catch (error) {
+      console.error('Update script IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to update script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('db-delete-script', async (event, scriptId) => {
+    try {
+      return await databaseService.deleteScript(scriptId);
+    } catch (error) {
+      console.error('Delete script IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Failed to delete script: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
   // ========== LLM HANDLERS ==========
 
   // Initialize LLM service
@@ -880,6 +947,101 @@ export function setupIPCHandlers() {
       return {
         success: false,
         error: `Conversation monitoring failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  // ========== STORYBOARD AND SHOT HANDLERS ==========
+  
+  ipcMain.handle('database-saveStoryboard', async (event, projectId, storyboard) => {
+    try {
+      return await databaseService.saveStoryboard(projectId, storyboard);
+    } catch (error) {
+      console.error('Save storyboard IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Save storyboard failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('database-getStoryboard', async (event, projectId) => {
+    try {
+      return await databaseService.getStoryboard(projectId);
+    } catch (error) {
+      console.error('Get storyboard IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Get storyboard failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('database-saveShots', async (event, projectId, shots) => {
+    try {
+      return await databaseService.saveShots(projectId, shots);
+    } catch (error) {
+      console.error('Save shots IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Save shots failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('database-getShots', async (event, projectId) => {
+    try {
+      return await databaseService.getShots(projectId);
+    } catch (error) {
+      console.error('Get shots IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Get shots failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  // ========== SOUND NOTES HANDLERS ==========
+
+  ipcMain.handle('database-saveSoundNotes', async (event, projectId, soundNotes) => {
+    try {
+      return await databaseService.saveSoundNotes(projectId, soundNotes);
+    } catch (error) {
+      console.error('Save sound notes IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Save sound notes failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('database-getSoundNotes', async (event, projectId) => {
+    try {
+      return await databaseService.getSoundNotes(projectId);
+    } catch (error) {
+      console.error('Get sound notes IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Get sound notes failed: ${error}`,
+        timestamp: new Date()
+      };
+    }
+  });
+
+  ipcMain.handle('database-getSoundNotesForShot', async (event, shotId) => {
+    try {
+      return await databaseService.getSoundNotesForShot(shotId);
+    } catch (error) {
+      console.error('Get sound notes for shot IPC handler failed:', error);
+      return {
+        success: false,
+        error: `Get sound notes for shot failed: ${error}`,
         timestamp: new Date()
       };
     }
